@@ -5,15 +5,20 @@ export const metadata = { title: 'Reset Password' }
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-6">
-        <h1 className="text-2xl font-bold text-center">Reset Password</h1>
+    <div className="min-h-screen flex items-center justify-center px-4 bg-[#07030b]">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-10">
+          <p className="text-xs tracking-widest uppercase text-[#c5a028] mb-4">Account</p>
+          <h1 className="font-serif text-3xl text-[#f2ede8]">Reset Password</h1>
+        </div>
+
         <ResetPasswordForm />
-        <p className="text-center text-sm">
-          <Link href="/auth/login" className="text-muted-foreground hover:underline">
+
+        <div className="mt-8 text-center">
+          <Link href="/auth/login" className="text-xs text-[#4a4448] hover:text-[#7a7078] transition-colors">
             Back to sign in
           </Link>
-        </p>
+        </div>
       </div>
     </div>
   )

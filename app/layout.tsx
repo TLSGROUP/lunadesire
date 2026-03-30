@@ -1,10 +1,16 @@
 import type { Metadata } from 'next'
-import { Geist } from 'next/font/google'
+import { Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
 
-const geist = Geist({
-  variable: '--font-geist',
+const inter = Inter({
+  variable: '--font-inter',
   subsets: ['latin'],
+})
+
+const playfair = Playfair_Display({
+  variable: '--font-playfair',
+  subsets: ['latin'],
+  style: ['normal', 'italic'],
 })
 
 export const metadata: Metadata = {
@@ -12,18 +18,14 @@ export const metadata: Metadata = {
     default: 'LunaDesire',
     template: '%s | LunaDesire',
   },
-  description: 'Premium adult novelty store',
-  robots: { index: false, follow: false }, // TODO: enable for production after age-gate
+  description: 'Curated luxury wellness products designed for profound connection and aesthetic pleasure.',
+  robots: { index: false, follow: false },
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+    <html lang="en" className={`${inter.variable} ${playfair.variable} h-full`}>
+      <body className="min-h-full flex flex-col bg-background text-foreground antialiased">
         {children}
       </body>
     </html>

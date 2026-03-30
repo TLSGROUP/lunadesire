@@ -24,6 +24,7 @@ import type {
   DreamLoveCategory,
   DreamLoveBrand,
   DreamLovePriceEntry,
+  DreamLoveTranslation,
 } from './types'
 
 // ---- Catalog XML -----------------------------------------------
@@ -41,9 +42,8 @@ function parseCatalogXml(xml: string): DreamLoveProduct[] {
     ignoreAttributes: false,
     attributeNamePrefix: '@_',
     parseAttributeValue: true,
-    // Force these tags to always be arrays even when only one element
     isArray: (tagName) =>
-      ['product', 'image', 'barcode', 'category', 'location'].includes(tagName),
+      ['product', 'image', 'barcode', 'category', 'location', 'value'].includes(tagName),
   })
   const doc = parser.parse(xml)
 
@@ -143,8 +143,62 @@ function parseCatalogXml(xml: string): DreamLoveProduct[] {
 
       const weight =
         i.shipping_weight != null
-          ? parseInt(String(i.shipping_weight), 10) || undefined
+          ? parseInt(String((i.shipping_weight as Record<string, unknown>)?.['#text'] ?? i.shipping_weight), 10) || undefined
           : undefined
+
+      const publicId = typeof i.public_id === 'string' ? i.public_id.trim() : undefined
+      const updatedAtSupplier = typeof i.updated === 'string' ? i.updated.trim() : undefined
+      const releaseDate = typeof i.release_date === 'string' ? i.release_date.trim() : undefined
+      const minUnits = parseInt(String(i.min_units_per_order ?? 1), 10) || 1
+      const maxUnits = parseInt(String(i.max_units_per_order ?? 999), 10) || 999
+      const vatPct = i.vat != null ? parseFloat(String(i.vat)) || undefined : undefined
+
+      // <sale value="0"/> <new value="0"/>
+      const saleVal = (i.sale as Record<string, unknown> | undefined)?.['@_value']
+      const newVal = (i.new as Record<string, unknown> | undefined)?.['@_value']
+      const isSale = saleVal === 1 || saleVal === '1'
+      const isNew = newVal === 1 || newVal === '1'
+
+      // <refrigerated value="0"/>
+      const refrigVal = (i.refrigerated as Record<string, unknown> | undefined)?.['@_value']
+      const isRefrigerated = refrigVal === 1 || refrigVal === '1'
+
+      // <size unit="mm"><width>96</width><height>306</height><depth>93</depth></size>
+      const sizeObj = i.size as Record<string, unknown> | undefined
+      const widthMm = sizeObj?.width != null ? parseInt(String(sizeObj.width), 10) || undefined : undefined
+      const heightMm = sizeObj?.height != null ? parseInt(String(sizeObj.height), 10) || undefined : undefined
+      const depthMm = sizeObj?.depth != null ? parseInt(String(sizeObj.depth), 10) || undefined : undefined
+
+      const hsIntrastatCode = typeof i.hs_intrastat_code === 'string' && i.hs_intrastat_code.trim()
+        ? i.hs_intrastat_code.trim()
+        : undefined
+
+      // <internationalization><title><value lang="en-UK">...</value>...
+      const translations: DreamLoveTranslation[] = []
+      const intl = i.internationalization as Record<string, unknown> | undefined
+      if (intl) {
+        const langMap = new Map<string, DreamLoveTranslation>()
+
+        const extractIntlField = (fieldName: string, setter: (t: DreamLoveTranslation, v: string) => void) => {
+          const field = (intl[fieldName] as Record<string, unknown> | undefined)?.value
+          if (Array.isArray(field)) {
+            for (const v of field) {
+              const val = v as Record<string, unknown>
+              const lang = String(val['@_lang'] ?? '')
+              const text = String(val['#text'] ?? '').trim()
+              if (!lang || !text) continue
+              if (!langMap.has(lang)) langMap.set(lang, { lang })
+              setter(langMap.get(lang)!, text)
+            }
+          }
+        }
+
+        extractIntlField('title', (t, v) => { t.title = v })
+        extractIntlField('description', (t, v) => { t.description = v })
+        extractIntlField('html_description', (t, v) => { t.htmlDescription = v })
+
+        translations.push(...langMap.values())
+      }
 
       return {
         id,
@@ -162,6 +216,20 @@ function parseCatalogXml(xml: string): DreamLoveProduct[] {
         images,
         weight,
         attributes: {},
+        translations,
+        publicId,
+        updatedAtSupplier,
+        releaseDate,
+        minUnits,
+        maxUnits,
+        vatPct,
+        isSale,
+        isNew,
+        isRefrigerated,
+        widthMm,
+        heightMm,
+        depthMm,
+        hsIntrastatCode,
       }
     })
     .filter((p): p is DreamLoveProduct => p !== null)

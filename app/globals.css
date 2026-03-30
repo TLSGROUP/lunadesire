@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #07030b;
+  --color-bg-base: #07030b;
+  --color-bg-card: #0d080f;
+  --color-bg-footer: #050207;
+  --color-muted: #1a1a1a;
+  --color-muted-foreground: #7a7078;
+  --color-foreground: #f2ede8;
+  --color-border: #1e181d;
+  --color-crimson: #8b1a3a;
+  --color-crimson-hover: #a82148;
+  --color-gold: #c5a028;
+  --color-text-primary: #f2ede8;
+  --color-text-muted: #7a7078;
+  --color-text-dim: #4a4448;
+
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #07030b;
+  color: #f2ede8;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
+}
+
+/* ── Glassmorphism ─────────────────────────────────────────── */
+.glass-panel {
+  background: rgba(13, 8, 15, 0.55);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(242, 237, 232, 0.07);
+}
+
+/* ── Gold gradient text ────────────────────────────────────── */
+.gold-gradient-text {
+  background: linear-gradient(
+    135deg,
+    #c5a028 0%,
+    #e8c84a 35%,
+    #c5a028 55%,
+    #9a7a18 80%,
+    #c5a028 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Text glow ─────────────────────────────────────────────── */
+.text-glow {
+  text-shadow:
+    0 0 20px rgba(242, 237, 232, 0.25),
+    0 0 40px rgba(197, 160, 40, 0.12);
+}
+
+.text-glow-crimson {
+  text-shadow:
+    0 0 20px rgba(139, 26, 58, 0.5),
+    0 0 50px rgba(139, 26, 58, 0.25);
 }

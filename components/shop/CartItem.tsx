@@ -22,41 +22,45 @@ export function CartItem({ item }: CartItemProps) {
   }
 
   return (
-    <div className="flex gap-4 items-start border rounded-lg p-3">
-      <div className="w-16 h-16 bg-muted rounded shrink-0">
-        {product.images?.[0] && (
+    <div className="flex gap-4 items-start border border-[#1e181d] p-4">
+      <div className="w-20 h-20 bg-[#0d080f] shrink-0">
+        {product.images?.[0] ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={product.images[0]}
             alt={product.name}
-            className="w-full h-full object-contain rounded"
+            className="w-full h-full object-contain"
           />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-xs text-[#333]">No image</span>
+          </div>
         )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm line-clamp-2">{product.name}</p>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          {formatPrice(product.retail_price)} each
+        <p className="text-sm text-[#f2ede8] leading-snug mb-1">{product.name}</p>
+        <p className="text-xs text-[#7a7078]">
+          {formatPrice(product.retail_price)} / шт.
         </p>
 
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-3 mt-3">
           <button
             disabled={isPending}
             onClick={() =>
               startTransition(() => { void updateCartQuantity(item.id, item.quantity - 1) })
             }
-            className="w-7 h-7 border rounded text-sm hover:bg-muted disabled:opacity-50"
+            className="w-7 h-7 border border-[#1e181d] text-[#7a7078] text-sm hover:border-[#c5a028] hover:text-[#c5a028] disabled:opacity-50 transition-colors"
           >
             −
           </button>
-          <span className="text-sm w-6 text-center">{item.quantity}</span>
+          <span className="text-sm text-[#f2ede8] w-5 text-center">{item.quantity}</span>
           <button
             disabled={isPending}
             onClick={() =>
               startTransition(() => { void updateCartQuantity(item.id, item.quantity + 1) })
             }
-            className="w-7 h-7 border rounded text-sm hover:bg-muted disabled:opacity-50"
+            className="w-7 h-7 border border-[#1e181d] text-[#7a7078] text-sm hover:border-[#c5a028] hover:text-[#c5a028] disabled:opacity-50 transition-colors"
           >
             +
           </button>
@@ -64,13 +68,13 @@ export function CartItem({ item }: CartItemProps) {
       </div>
 
       <div className="text-right shrink-0">
-        <p className="font-semibold">{formatPrice(product.retail_price * item.quantity)}</p>
+        <p className="text-sm text-[#c5a028]">{formatPrice(product.retail_price * item.quantity)}</p>
         <button
           disabled={isPending}
           onClick={() => startTransition(() => { void removeFromCart(item.id) })}
-          className="text-muted-foreground hover:text-destructive mt-2 disabled:opacity-50"
+          className="text-[#4a4448] hover:text-[#8b1a3a] mt-3 disabled:opacity-50 transition-colors"
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>

@@ -33,49 +33,52 @@ export function CheckoutForm() {
     })
   }
 
+  const inputCls = "w-full bg-[#0d080f] border border-[#1e181d] text-[#f2ede8] px-4 py-3 text-sm focus:outline-none focus:border-[#c5a028] transition-colors"
+  const labelCls = "block text-xs tracking-widest uppercase text-[#7a7078] mb-2"
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="font-semibold text-lg">Shipping Address</h2>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <h2 className="text-xs tracking-widest uppercase text-[#7a7078] mb-6">Shipping Address</h2>
 
       {error && (
-        <p className="bg-destructive/10 text-destructive text-sm p-3 rounded">{error}</p>
+        <p className="border border-[#8b1a3a] text-[#e07070] text-xs p-3 tracking-wide">{error}</p>
       )}
 
       <div>
-        <label className="block text-sm font-medium mb-1">Full Name</label>
-        <input name="name" required className="w-full border rounded px-3 py-2 text-sm" />
+        <label className={labelCls}>Full Name</label>
+        <input name="name" required className={inputCls} />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Street Address</label>
-        <input name="street" required className="w-full border rounded px-3 py-2 text-sm" />
+        <label className={labelCls}>Street Address</label>
+        <input name="street" required className={inputCls} />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">City</label>
-          <input name="city" required className="w-full border rounded px-3 py-2 text-sm" />
+          <label className={labelCls}>City</label>
+          <input name="city" required className={inputCls} />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Postal Code</label>
-          <input name="postalCode" required className="w-full border rounded px-3 py-2 text-sm" />
+          <label className={labelCls}>Postal Code</label>
+          <input name="postalCode" required className={inputCls} />
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Country</label>
-        <input name="country" defaultValue="US" required className="w-full border rounded px-3 py-2 text-sm" />
+        <label className={labelCls}>Country</label>
+        <input name="country" defaultValue="CZ" required className={inputCls} />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Phone</label>
-        <input name="phone" type="tel" required className="w-full border rounded px-3 py-2 text-sm" />
+        <label className={labelCls}>Phone</label>
+        <input name="phone" type="tel" required className={inputCls} />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Email</label>
-        <input name="email" type="email" required className="w-full border rounded px-3 py-2 text-sm" />
+        <label className={labelCls}>Email</label>
+        <input name="email" type="email" required className={inputCls} />
       </div>
 
       <button
         type="submit"
         disabled={isPending}
-        className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:bg-primary/90 disabled:opacity-60 transition-colors"
+        className="w-full bg-[#8b1a3a] text-white py-4 text-xs tracking-widest uppercase hover:bg-[#a82148] disabled:opacity-40 transition-colors duration-300 mt-4"
       >
         {isPending ? 'Placing order…' : 'Place Order'}
       </button>

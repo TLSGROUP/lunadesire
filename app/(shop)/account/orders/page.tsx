@@ -10,16 +10,16 @@ export default async function OrdersPage() {
   if (orders.length === 0) {
     return (
       <div>
-        <h1 className="text-2xl font-bold mb-6">Orders</h1>
-        <p className="text-muted-foreground">No orders yet.</p>
+        <h2 className="font-serif text-2xl text-[#f2ede8] mb-8">Orders</h2>
+        <p className="text-xs tracking-widest uppercase text-[#4a4448]">No orders yet.</p>
       </div>
     )
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Orders</h1>
-      <div className="space-y-3">
+      <h2 className="font-serif text-2xl text-[#f2ede8] mb-8">Orders</h2>
+      <div className="space-y-2">
         {orders.map((order: {
           id: string
           created_at: string
@@ -30,20 +30,20 @@ export default async function OrdersPage() {
           <Link
             key={order.id}
             href={`/account/orders/${order.id}`}
-            className="block border rounded-lg p-4 hover:bg-muted transition-colors"
+            className="block border border-[#1e181d] p-4 hover:border-[#c5a028] transition-colors duration-300"
           >
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-center">
               <div>
-                <p className="font-mono text-sm text-muted-foreground">
-                  #{order.id.slice(0, 8)}
+                <p className="font-mono text-xs text-[#4a4448]">
+                  #{order.id.slice(0, 8).toUpperCase()}
                 </p>
-                <p className="text-sm mt-1">
+                <p className="text-xs text-[#7a7078] mt-1">
                   {new Date(order.created_at).toLocaleDateString('en')}
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-semibold">{formatPrice(order.total)}</p>
-                <span className="text-xs bg-muted px-2 py-0.5 rounded-full capitalize">
+                <p className="text-sm text-[#c5a028]">{formatPrice(order.total)}</p>
+                <span className="text-xs tracking-widest uppercase text-[#4a4448] mt-1 block">
                   {order.status}
                 </span>
               </div>

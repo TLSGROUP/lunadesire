@@ -74,8 +74,8 @@ function parseLogisticsResponse(xml: string): DreamLoveShippingMethod[] {
   )
   if (!keyValueMatch) return []
 
-  // Double-decode: &amp;lt; → &lt; → <
-  const feesXml = decodeXmlEntities(decodeXmlEntities(keyValueMatch[1]))
+  // Triple-decode: &amp;amp;lt; → &amp;lt; → &lt; → <
+  const feesXml = decodeXmlEntities(decodeXmlEntities(decodeXmlEntities(keyValueMatch[1])))
 
   const methods: DreamLoveShippingMethod[] = []
   const sfRegex = /<sf>([\s\S]*?)<\/sf>/gi
@@ -257,8 +257,12 @@ function parseNewOrderResponse(xml: string): DreamLoveOrderResult {
 // ---- Helpers ---------------------------------------------------
 
 function extractTag(xml: string, tag: string): string | null {
-  const match = xml.match(new RegExp(`<${tag}>([^<]*)<\/${tag}>`, 'i'))
-  return match ? match[1].trim() : null
+  // Matches plain text or CDATA content: <tag>text</tag> or <tag><![CDATA[text]]></tag>
+  const match = xml.match(
+    new RegExp(`<${tag}>(?:<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>|([^<]*))<\\/${tag}>`, 'i'),
+  )
+  if (!match) return null
+  return (match[1] ?? match[2] ?? '').trim()
 }
 
 function escapeXml(str: string): string {

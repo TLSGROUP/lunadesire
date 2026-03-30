@@ -3,6 +3,13 @@
 // Adapt field names after inspecting actual feed/WSDL responses.
 // ============================================================
 
+export interface DreamLoveTranslation {
+  lang: string
+  title?: string
+  description?: string
+  htmlDescription?: string
+}
+
 export interface DreamLoveProduct {
   id: string            // DreamLove product ID (string, treat as opaque)
   ean?: string
@@ -17,8 +24,22 @@ export interface DreamLoveProduct {
   supplierShipping: number  // default_shipping_cost от DreamLove
   stock: number
   images?: string[]
-  weight?: number
+  weight?: number          // shipping_weight in grams
   attributes?: Record<string, string>
+  translations?: DreamLoveTranslation[]
+  publicId?: string        // public_id e.g. 'D-196690'
+  updatedAtSupplier?: string
+  releaseDate?: string
+  minUnits: number
+  maxUnits: number
+  vatPct?: number
+  isSale: boolean
+  isNew: boolean
+  isRefrigerated: boolean
+  widthMm?: number
+  heightMm?: number
+  depthMm?: number
+  hsIntrastatCode?: string
 }
 
 export interface DreamLoveCategory {

@@ -36,42 +36,42 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <p className="bg-destructive/10 text-destructive text-sm p-3 rounded">{error}</p>
+        <p className="border border-[#8b1a3a] text-[#e07070] text-xs p-3 tracking-wide">{error}</p>
       )}
       <div>
-        <label className="block text-sm font-medium mb-1">Full Name</label>
+        <label className="block text-xs tracking-widest uppercase text-[#7a7078] mb-2">Full Name</label>
         <input
           name="full_name"
           required
           autoComplete="name"
-          className="w-full border rounded px-3 py-2 text-sm"
+          className="w-full bg-[#0d080f] border border-[#1e181d] text-[#f2ede8] px-4 py-3 text-sm focus:outline-none focus:border-[#c5a028] transition-colors"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Email</label>
+        <label className="block text-xs tracking-widest uppercase text-[#7a7078] mb-2">Email</label>
         <input
           name="email"
           type="email"
           required
           autoComplete="email"
-          className="w-full border rounded px-3 py-2 text-sm"
+          className="w-full bg-[#0d080f] border border-[#1e181d] text-[#f2ede8] px-4 py-3 text-sm focus:outline-none focus:border-[#c5a028] transition-colors"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Password</label>
+        <label className="block text-xs tracking-widest uppercase text-[#7a7078] mb-2">Password</label>
         <input
           name="password"
           type="password"
           required
           minLength={8}
           autoComplete="new-password"
-          className="w-full border rounded px-3 py-2 text-sm"
+          className="w-full bg-[#0d080f] border border-[#1e181d] text-[#f2ede8] px-4 py-3 text-sm focus:outline-none focus:border-[#c5a028] transition-colors"
         />
       </div>
       <button
         type="submit"
         disabled={isPending}
-        className="w-full bg-primary text-primary-foreground py-2.5 rounded font-semibold hover:bg-primary/90 disabled:opacity-60 transition-colors"
+        className="w-full bg-[#8b1a3a] text-white py-4 text-xs tracking-widest uppercase hover:bg-[#a82148] disabled:opacity-40 transition-colors duration-300 mt-2"
       >
         {isPending ? 'Creating account…' : 'Create Account'}
       </button>

@@ -17,7 +17,7 @@ export default async function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Settings</h1>
+      <h2 className="font-serif text-2xl text-[#f2ede8] mb-8">Settings</h2>
       <ProfileForm
         defaultValues={{ full_name: profile?.full_name ?? '', phone: profile?.phone ?? '' }}
       />
