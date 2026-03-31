@@ -15,7 +15,7 @@ export default async function CheckoutPage() {
   }, 0)
 
   return (
-    <div className="pt-20 min-h-screen">
+    <div className="pt-20 min-h-screen bg-[#020104]">
       <div className="border-b border-[#1e181d] py-12">
         <div className="max-w-5xl mx-auto px-6">
           <p className="text-xs tracking-widest uppercase text-[#c5a028] mb-3">Checkout</p>

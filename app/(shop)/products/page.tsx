@@ -86,10 +86,10 @@ export default async function ProductsPage({ searchParams }: Props) {
   }
 
   return (
-    <div className="pt-20 h-screen flex flex-col overflow-hidden">
+    <div className="pt-20 h-screen flex flex-col overflow-hidden bg-[#020104]">
       {/* Page header */}
       <div className="border-b border-[#1e181d] py-12 shrink-0">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-[1600px] mx-auto px-6">
           {/* Breadcrumb */}
           {breadcrumb.length > 0 ? (
             <div className="flex items-center gap-2 text-xs tracking-widest uppercase text-[#4a4448] mb-3">
@@ -127,14 +127,14 @@ export default async function ProductsPage({ searchParams }: Props) {
               name: c.name.split('|').pop()!,
             }))}
             currentSlug={category ?? null}
-            parentSlug={currentCat?.parent_id ? cats.find((c) => c.id === currentCat!.parent_id)?.slug ?? null : null}
+            containerSlug={currentCat?.slug ?? null}
           />
         </div>
       )}
 
       {/* Scrollable products area */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="max-w-[1600px] mx-auto px-6 py-12">
           <ProductGrid products={products ?? []} />
 
           {/* Pagination */}
@@ -143,18 +143,18 @@ export default async function ProductsPage({ searchParams }: Props) {
               {page > 1 && (
                 <Link
                   href={`/products?page=${page - 1}${category ? `&category=${encodeURIComponent(category)}` : ''}${q ? `&q=${q}` : ''}`}
-                  className="px-6 py-2 border border-[#1e181d] text-xs tracking-widest uppercase text-[#7a7078] hover:border-[#c5a028] hover:text-[#c5a028] transition-colors duration-300"
+                  className="px-6 py-2 border border-[#3a3038] text-xs tracking-widest uppercase text-[#f2ede8] hover:border-[#c5a028] hover:text-[#c5a028] transition-colors duration-300"
                 >
                   Previous
                 </Link>
               )}
-              <span className="px-6 py-2 text-xs text-[#4a4448]">
+              <span className="px-6 py-2 text-xs text-[#7a7078]">
                 {page} / {totalPages}
               </span>
               {page < totalPages && (
                 <Link
                   href={`/products?page=${page + 1}${category ? `&category=${encodeURIComponent(category)}` : ''}${q ? `&q=${q}` : ''}`}
-                  className="px-6 py-2 border border-[#1e181d] text-xs tracking-widest uppercase text-[#7a7078] hover:border-[#c5a028] hover:text-[#c5a028] transition-colors duration-300"
+                  className="px-6 py-2 border border-[#3a3038] text-xs tracking-widest uppercase text-[#f2ede8] hover:border-[#c5a028] hover:text-[#c5a028] transition-colors duration-300"
                 >
                   Next
                 </Link>

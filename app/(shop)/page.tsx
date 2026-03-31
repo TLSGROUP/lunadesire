@@ -50,7 +50,7 @@ export default async function HomePage() {
 
       {/* Curated Selections */}
       <section className="bg-[#020104] py-24">
-        <div className="max-w-7xl mx-auto px-6 mb-12">
+        <div className="max-w-[1600px] mx-auto px-6 mb-12">
           <div className="flex items-end justify-between">
             <div>
               <h2 className="font-serif text-4xl text-[#f2ede8] mb-3">Curated Selections</h2>
@@ -58,12 +58,9 @@ export default async function HomePage() {
                 Our signature pieces blending sophisticated design with unparalleled sensation.
               </p>
             </div>
-            <Link href="/products" className="text-xs tracking-widest uppercase text-[#7a7078] hover:text-[#c5a028] transition-colors duration-300">
-              View Complete Collection
-            </Link>
           </div>
         </div>
-        <div className="px-6">
+        <div className="max-w-[1600px] mx-auto px-6">
           <BannerCarousel />
         </div>
       </section>
@@ -80,7 +77,7 @@ export default async function HomePage() {
       {/* New Arrivals */}
       {(newArrivals ?? []).length > 0 && (
         <section className="bg-[#020104] px-6 py-24">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-[1600px] mx-auto">
             <div className="flex items-end justify-between mb-12">
               <div>
                 <p className="text-xs tracking-widest uppercase text-[#c5a028] mb-2">Just Arrived</p>

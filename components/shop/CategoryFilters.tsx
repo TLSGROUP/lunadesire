@@ -3,17 +3,17 @@ import Link from 'next/link'
 interface Props {
   subcategories: { slug: string; name: string }[]
   currentSlug: string | null
-  parentSlug: string | null
+  containerSlug: string | null
 }
 
-export function CategoryFilters({ subcategories, currentSlug, parentSlug }: Props) {
+export function CategoryFilters({ subcategories, currentSlug, containerSlug }: Props) {
   return (
     <div className="border-b border-[#1e181d]">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-[1600px] mx-auto px-6">
         <div className="flex flex-wrap gap-2 py-4">
           {/* "All" pill — links back to parent or /products */}
           <Link
-            href={parentSlug ? `/products?category=${encodeURIComponent(parentSlug)}` : '/products'}
+            href={containerSlug ? `/products?category=${encodeURIComponent(containerSlug)}` : '/products'}
             className={`shrink-0 px-4 py-1.5 text-xs tracking-widest uppercase border transition-colors duration-200 ${
               !currentSlug
                 ? 'border-[#c5a028] text-[#c5a028]'

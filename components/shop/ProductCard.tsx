@@ -47,7 +47,7 @@ export function ProductCard({ product, compact = false }: Props) {
 
   return (
     <Link href={`/products/${product.slug}`} className="group block">
-      <div className="aspect-[3/4] bg-[#0d080f] overflow-hidden mb-4 relative">
+      <div className="aspect-square bg-[#0d080f] overflow-hidden mb-4 relative">
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
