@@ -30,7 +30,9 @@ import type {
 // ---- Catalog XML -----------------------------------------------
 
 export async function fetchCatalog(): Promise<DreamLoveProduct[]> {
-  const url = process.env.DREAMLOVE_CATALOG_URL!
+  const baseUrl = process.env.DREAMLOVE_CATALOG_URL!
+  const token = process.env.DREAMLOVE_TOKEN
+  const url = token ? `${baseUrl}?tkn=${token}` : baseUrl
   const res = await fetch(url, { cache: 'no-store' })
   if (!res.ok) throw new Error(`Catalog fetch failed: ${res.status}`)
   const xml = await res.text()
@@ -117,9 +119,16 @@ function parseCatalogXml(xml: string): DreamLoveProduct[] {
       const categoriesObj = i.categories as Record<string, unknown> | undefined
       const categoryArr = categoriesObj?.category
       if (Array.isArray(categoryArr) && categoryArr.length > 0) {
-        const firstCat = categoryArr[0] as Record<string, unknown>
-        const catName = firstCat['#text']
-        if (catName != null) categoryId = String(catName).trim()
+        // Pick the most specific (deepest) category — most pipes in the name
+        const names = categoryArr
+          .map((c) => {
+            const cat = c as Record<string, unknown>
+            return cat['#text'] != null ? String(cat['#text']).trim() : null
+          })
+          .filter(Boolean) as string[]
+        // Sort by depth (number of '|') descending, pick deepest
+        names.sort((a, b) => b.split('|').length - a.split('|').length)
+        if (names.length > 0) categoryId = names[0]
       }
 
       // <images><image preferred="1"><src>URL</src></image></images>

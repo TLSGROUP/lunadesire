@@ -1,18 +1,12 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { ProductCard } from '@/components/shop/ProductCard'
+import { ProductCarousel } from '@/components/shop/ProductCarousel'
+import { BannerCarousel } from '@/components/shop/BannerCarousel'
 
 export const metadata = { title: 'Home' }
 
 export default async function HomePage() {
   const supabase = await createClient()
-
-  const { data: featured } = await supabase
-    .from('products')
-    .select('id, name, slug, retail_price, images, brand, stock_quantity')
-    .eq('is_active', true)
-    .order('created_at', { ascending: false })
-    .limit(3)
 
   const { data: newArrivals } = await supabase
     .from('products')
@@ -20,7 +14,7 @@ export default async function HomePage() {
     .eq('is_active', true)
     .eq('is_new', true)
     .order('created_at', { ascending: false })
-    .limit(6)
+    .limit(499)
 
   return (
     <>
@@ -55,9 +49,9 @@ export default async function HomePage() {
       </section>
 
       {/* Curated Selections */}
-      <section className="bg-[#030106] px-6 py-24">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-end justify-between mb-12">
+      <section className="bg-[#020104] py-24">
+        <div className="max-w-7xl mx-auto px-6 mb-12">
+          <div className="flex items-end justify-between">
             <div>
               <h2 className="font-serif text-4xl text-[#f2ede8] mb-3">Curated Selections</h2>
               <p className="text-xs text-[#4a4448] max-w-xs leading-relaxed">
@@ -68,11 +62,9 @@ export default async function HomePage() {
               View Complete Collection
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {(featured ?? []).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+        </div>
+        <div className="px-6">
+          <BannerCarousel />
         </div>
       </section>
 
@@ -87,20 +79,18 @@ export default async function HomePage() {
 
       {/* New Arrivals */}
       {(newArrivals ?? []).length > 0 && (
-        <section className="max-w-7xl mx-auto px-6 py-24">
-          <div className="flex items-end justify-between mb-12">
-            <div>
-              <p className="text-xs tracking-widest uppercase text-[#c5a028] mb-2">Just Arrived</p>
-              <h2 className="font-serif text-4xl text-[#f2ede8]">New Arrivals</h2>
+        <section className="bg-[#020104] px-6 py-24">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-end justify-between mb-12">
+              <div>
+                <p className="text-xs tracking-widest uppercase text-[#c5a028] mb-2">Just Arrived</p>
+                <h2 className="font-serif text-4xl text-[#f2ede8]">New Arrivals</h2>
+              </div>
+              <Link href="/products?filter=new" className="text-xs tracking-widest uppercase text-[#7a7078] hover:text-[#c5a028] transition-colors duration-300">
+                See All
+              </Link>
             </div>
-            <Link href="/products?filter=new" className="text-xs tracking-widest uppercase text-[#7a7078] hover:text-[#c5a028] transition-colors duration-300">
-              See All
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {(newArrivals ?? []).map((product) => (
-              <ProductCard key={product.id} product={product} compact />
-            ))}
+            <ProductCarousel products={newArrivals ?? []} />
           </div>
         </section>
       )}

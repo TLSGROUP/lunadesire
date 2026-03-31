@@ -39,7 +39,7 @@ export function ProductCard({ product, compact = false }: Props) {
         <p className="text-xs text-[#7a7078] uppercase tracking-widest truncate mb-1">
           {product.brand ?? ''}
         </p>
-        <p className="text-xs text-[#f2ede8] line-clamp-1">{product.name}</p>
+        <p className="text-xs text-[#f2ede8] line-clamp-2 leading-snug">{product.name}</p>
         <p className="text-xs text-[#c5a028] mt-1">{formatPrice(product.retail_price)}</p>
       </Link>
     )

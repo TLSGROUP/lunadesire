@@ -13,31 +13,40 @@ export async function Header() {
           LunaDesire
         </Link>
 
-        <nav className="hidden md:flex items-center gap-10 text-xs tracking-widest uppercase text-[#7a7078]">
-          <Link href="/products" className="hover:text-[#c5a028] transition-colors duration-300">
-            Shop
+        <nav className="hidden md:flex items-center gap-8 text-xs tracking-widest uppercase text-[#f2ede8]">
+          <Link href="/products?category=lovetoys-LOVETOYS" className="hover:text-[#c5a028] transition-colors duration-300">
+            Lovetoys
           </Link>
-          <Link href="/products?category=toys" className="hover:text-[#c5a028] transition-colors duration-300">
-            Toys & Devices
-          </Link>
-          <Link href="/products?category=lingerie" className="hover:text-[#c5a028] transition-colors duration-300">
+          <Link href="/products?category=fashion-lingerie-FASHION+%26+LINGERIE" className="hover:text-[#c5a028] transition-colors duration-300">
             Lingerie
           </Link>
-          <Link href="/products?category=care" className="hover:text-[#c5a028] transition-colors duration-300">
-            Sensual Care
+          <Link href="/products?category=sm-bondage-SM+%26+BONDAGE" className="hover:text-[#c5a028] transition-colors duration-300">
+            SM & Bondage
+          </Link>
+          <Link href="/products?category=sex-drugstore-SEX+DRUGSTORE" className="hover:text-[#c5a028] transition-colors duration-300">
+            Drugstore
+          </Link>
+          <Link href="/products?category=condoms-CONDOMS" className="hover:text-[#c5a028] transition-colors duration-300">
+            Condoms
+          </Link>
+          <Link href="/products?category=games-GAMES" className="hover:text-[#c5a028] transition-colors duration-300">
+            Games
+          </Link>
+          <Link href="/products?category=assorted-items-ASSORTED+ITEMS" className="hover:text-[#c5a028] transition-colors duration-300">
+            Assorted
           </Link>
         </nav>
 
         <div className="flex items-center gap-5">
-          <Link href="/cart" className="text-[#7a7078] hover:text-[#c5a028] transition-colors duration-300">
+          <Link href="/cart" className="text-[#f2ede8] hover:text-[#c5a028] transition-colors duration-300">
             <ShoppingCart className="h-5 w-5" />
           </Link>
           {user ? (
-            <Link href="/account" className="text-[#7a7078] hover:text-[#c5a028] transition-colors duration-300">
+            <Link href="/account" className="text-[#f2ede8] hover:text-[#c5a028] transition-colors duration-300">
               <User className="h-5 w-5" />
             </Link>
           ) : (
-            <Link href="/auth/login" className="text-xs tracking-widest uppercase text-[#7a7078] hover:text-[#c5a028] transition-colors duration-300">
+            <Link href="/auth/login" className="text-xs tracking-widest uppercase text-[#f2ede8] hover:text-[#c5a028] transition-colors duration-300">
               Sign in
             </Link>
           )}

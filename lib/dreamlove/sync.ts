@@ -89,11 +89,12 @@ export async function runFullSync(
   }
 
   // 4. Fetch and resolve category/brand FK ids from DB
-  const { data: dbCategories } = await supabase.from('categories').select('id, dreamlove_id')
+  // categoryId from feed is the category NAME (e.g. "LOVETOYS|Anal"), map by name
+  const { data: dbCategories } = await supabase.from('categories').select('id, name, dreamlove_id')
   const { data: dbBrands } = await supabase.from('brands').select('id, dreamlove_id')
 
   const categoryMap = new Map(
-    (dbCategories ?? []).map((c: { id: string; dreamlove_id: string }) => [c.dreamlove_id, c.id]),
+    (dbCategories ?? []).map((c: { id: string; name: string; dreamlove_id: string }) => [c.name, c.id]),
   )
   const brandMap = new Map(
     (dbBrands ?? []).map((b: { id: string; dreamlove_id: string }) => [b.dreamlove_id, b.id]),
