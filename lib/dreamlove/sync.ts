@@ -1,27 +1,70 @@
 // ============================================================
-// DreamLove sync orchestration
-// Coordinates the 4 feed fetches and upserts into Supabase.
-// Idempotent — safe to run multiple times.
+// DreamLove sync — uses REST API (api-dreamlove.gesio.be)
+// Replaces XML feed + SOAP approach.
 // ============================================================
 
 import { createServiceClient } from '@/lib/supabase/server'
 import { calculateRetailPrice, charmPrice } from '@/lib/pricing'
 import { slugify } from '@/lib/utils'
-import {
-  fetchCatalog,
-  fetchBrands,
-  fetchCategories,
-} from './feed'
-import { getLogisticsFiles } from './soap'
+import { getProducts, getAvailableStocks } from './api'
+import type { ApiProduct, ApiCategory } from './api'
 import type { SyncResult } from './types'
 
 const DEFAULT_MARKUP = parseFloat(process.env.DEFAULT_MARKUP_PCT ?? '40')
+const PAGE_SIZE = 100
 
 export interface SyncProgressEvent {
   stage: string
   synced?: number
   total?: number
   message?: string
+}
+
+// Build full category path name from nested parent chain
+// e.g. { name: 'Plugs', parent: { name: 'Anal', parent: { name: 'LOVETOYS', parent: null } } }
+// → 'LOVETOYS|Anal|Plugs'
+function buildCategoryPath(cat: ApiCategory): string {
+  const parts: string[] = []
+  let current: ApiCategory | null = cat
+  while (current) {
+    if (current.name) parts.unshift(current.name)
+    current = current.parent ?? null
+  }
+  return parts.join('|')
+}
+
+// Extract best image URLs from product images array
+function extractImages(images: ApiProduct['images']): string[] {
+  if (!images || images.length === 0) return []
+  // Sort: main first, then by order
+  const sorted = [...images].sort((a, b) => {
+    if (a.main && !b.main) return -1
+    if (!a.main && b.main) return 1
+    return (a.order ?? 99) - (b.order ?? 99)
+  })
+  const urls: string[] = []
+  for (const img of sorted) {
+    if (!img.image?.files) continue
+    // Prefer largest file (type 'big' or highest resolution)
+    const files = img.image.files
+    const big = files.find((f) => f.type === 'big') ?? files[0]
+    if (big?.url) urls.push(big.url)
+  }
+  return urls
+}
+
+// Extract EAN barcode
+function extractEan(barcodes: ApiProduct['barcodes']): string | undefined {
+  if (!barcodes) return undefined
+  const ean = barcodes.find((b) => b.type?.toUpperCase().includes('EAN') || !b.type)
+  return ean?.barcode
+}
+
+// Extract VAT percentage
+function extractVat(product: ApiProduct): number | undefined {
+  const rates = product.vatGroup?.vatRates
+  if (!rates || rates.length === 0) return undefined
+  return parseFloat(rates[0].vatRate?.rate ?? '0') || undefined
 }
 
 export async function runFullSync(
@@ -31,91 +74,80 @@ export async function runFullSync(
   const result: SyncResult = { synced: 0, updated: 0, deactivated: 0, errors: [] }
   const supabase = await createServiceClient()
 
-  // 1. Sync shipping methods from DreamLove
-  emit({ stage: 'logistics', message: 'Fetching shipping methods...' })
+  // 1. Fetch all products from REST API (paginated)
+  emit({ stage: 'catalog', message: 'Fetching products from REST API...' })
+
+  const allProducts: ApiProduct[] = []
+  let page = 1
+  let totalItems = 0
+
   try {
-    const methods = await getLogisticsFiles()
-    for (const m of methods) {
-      await supabase.from('shipping_methods').upsert(
-        {
-          dl_code: m.code,
-          description: m.description,
-          dl_price: m.price,
-          free_from: m.freeFrom ?? null,
-          countries_csv: m.countriesCsv ?? null,
-          synced_at: new Date().toISOString(),
-        },
-        { onConflict: 'dl_code' },
-      )
+    while (true) {
+      const res = await getProducts({ page, pageSize: PAGE_SIZE })
+      if (page === 1) {
+        totalItems = res['hydra:totalItems']
+        emit({ stage: 'catalog', message: `Total products: ${totalItems}`, total: totalItems })
+      }
+      const members = res['hydra:member']
+      if (!members || members.length === 0) break
+      allProducts.push(...members)
+      emit({ stage: 'catalog', message: `Fetched ${allProducts.length} / ${totalItems}`, synced: allProducts.length, total: totalItems })
+      if (!res['hydra:view']?.['hydra:next']) break
+      page++
     }
-    emit({ stage: 'logistics', message: `Synced ${methods.length} shipping methods` })
   } catch (err) {
-    result.errors.push(`logistics: ${String(err)}`)
-    emit({ stage: 'logistics', message: `Error: ${String(err)}` })
-  }
-
-  // 2. Sync categories
-  emit({ stage: 'categories', message: 'Fetching categories...' })
-  try {
-    const categories = await fetchCategories()
-    for (const cat of categories) {
-      const slug = slugify(cat.name) + (cat.id ? '-' + cat.id : '')
-      await supabase.from('categories').upsert(
-        { dreamlove_id: cat.id, name: cat.name, slug },
-        { onConflict: 'dreamlove_id' },
-      )
-    }
-    emit({ stage: 'categories', message: `Synced ${categories.length} categories` })
-  } catch (err) {
-    result.errors.push(`categories: ${String(err)}`)
-    emit({ stage: 'categories', message: `Error: ${String(err)}` })
-  }
-
-  // 3. Sync brands
-  emit({ stage: 'brands', message: 'Fetching brands...' })
-  try {
-    const brands = await fetchBrands()
-    for (const brand of brands) {
-      const slug = slugify(brand.name) + (brand.id ? '-' + brand.id : '')
-      await supabase.from('brands').upsert(
-        { dreamlove_id: brand.id, name: brand.name, slug },
-        { onConflict: 'dreamlove_id' },
-      )
-    }
-    emit({ stage: 'brands', message: `Synced ${brands.length} brands` })
-  } catch (err) {
-    result.errors.push(`brands: ${String(err)}`)
-    emit({ stage: 'brands', message: `Error: ${String(err)}` })
-  }
-
-  // 4. Fetch and resolve category/brand FK ids from DB
-  // categoryId from feed is the category NAME (e.g. "LOVETOYS|Anal"), map by name
-  const { data: dbCategories } = await supabase.from('categories').select('id, name, dreamlove_id')
-  const { data: dbBrands } = await supabase.from('brands').select('id, dreamlove_id')
-
-  const categoryMap = new Map(
-    (dbCategories ?? []).map((c: { id: string; name: string; dreamlove_id: string }) => [c.name, c.id]),
-  )
-  const brandMap = new Map(
-    (dbBrands ?? []).map((b: { id: string; dreamlove_id: string }) => [b.dreamlove_id, b.id]),
-  )
-
-  // 6. Sync catalog products
-  emit({ stage: 'catalog', message: 'Fetching catalog XML...' })
-  let catalog: Awaited<ReturnType<typeof fetchCatalog>> = []
-  try {
-    catalog = await fetchCatalog()
-    emit({ stage: 'catalog', message: `Loaded ${catalog.length} products, starting upsert...`, total: catalog.length })
-  } catch (err) {
-    result.errors.push(`catalog: ${String(err)}`)
+    result.errors.push(`catalog fetch: ${String(err)}`)
     emit({ stage: 'catalog', message: `Error: ${String(err)}` })
     return result
   }
 
-  // Fetch existing updated_at_supplier for all products in one query (chunked)
-  emit({ stage: 'catalog', message: 'Comparing with DB timestamps...' })
+  emit({ stage: 'catalog', message: `Loaded ${allProducts.length} products` })
+
+  // 2. Extract and upsert unique categories
+  emit({ stage: 'categories', message: 'Syncing categories...' })
+  const categoryPathMap = new Map<string, ApiCategory>() // path → ApiCategory
+
+  for (const p of allProducts) {
+    const cat = p.mainCategory ?? p.categories?.[0]
+    if (!cat) continue
+    // Walk up the hierarchy and register all ancestor categories too
+    let current: ApiCategory | null = cat
+    const chain: ApiCategory[] = []
+    while (current) {
+      chain.unshift(current)
+      current = current.parent ?? null
+    }
+    // Register each level
+    for (let i = 0; i < chain.length; i++) {
+      const partial = chain.slice(0, i + 1)
+      const path = partial.map((c) => c.name ?? '').filter(Boolean).join('|')
+      if (path && !categoryPathMap.has(path)) {
+        categoryPathMap.set(path, chain[i])
+      }
+    }
+  }
+
+  for (const [path] of categoryPathMap) {
+    const slug = slugify(path)
+    await supabase.from('categories').upsert(
+      { dreamlove_id: path, name: path, slug },
+      { onConflict: 'dreamlove_id' },
+    )
+  }
+  emit({ stage: 'categories', message: `Synced ${categoryPathMap.size} categories` })
+
+  // 3. Load category map from DB (path → uuid)
+  const { data: dbCategories } = await supabase
+    .from('categories')
+    .select('id, name')
+  const categoryDbMap = new Map(
+    (dbCategories ?? []).map((c: { id: string; name: string }) => [c.name.toLowerCase(), c.id]),
+  )
+
+  // 4. Load existing products timestamps for incremental sync
+  emit({ stage: 'catalog', message: 'Comparing timestamps...' })
   const existingMap = new Map<string, string>() // dreamlove_id → updated_at_supplier
-  const ALL_IDS = catalog.map((p) => p.id)
+  const ALL_IDS = allProducts.map((p) => String(p.id))
   const TS_CHUNK = 500
   for (let i = 0; i < ALL_IDS.length; i += TS_CHUNK) {
     const { data } = await supabase
@@ -127,60 +159,67 @@ export async function runFullSync(
     }
   }
 
-  // Filter: only products new or updated since last sync
-  const toSync = catalog.filter((p) => {
-    const existing = existingMap.get(p.id)
-    if (!existing) return true // new product
-    if (!p.updatedAtSupplier) return false
-    return new Date(p.updatedAtSupplier) > new Date(existing)
+  // Filter products that need update
+  const toSync = allProducts.filter((p) => {
+    const existing = existingMap.get(String(p.id))
+    if (!existing) return true
+    if (!p.updatedAt) return false
+    return new Date(p.updatedAt) > new Date(existing)
   })
 
-  emit({ stage: 'catalog', message: `${toSync.length} products need update (${catalog.length - toSync.length} unchanged)`, total: toSync.length })
+  emit({ stage: 'catalog', message: `${toSync.length} products to update (${allProducts.length - toSync.length} unchanged)`, total: toSync.length })
 
-  const syncedIds = new Set<string>(existingMap.keys()) // pre-fill with existing IDs
-  const REPORT_EVERY = 500
-  const translationQueue: { dreamloveId: string; translations: { lang: string; title?: string; description?: string; htmlDescription?: string }[] }[] = []
+  // 5. Upsert products
+  const syncedIds = new Set<string>(existingMap.keys())
+  const REPORT_EVERY = 200
 
   for (const p of toSync) {
     try {
-      const supplierPrice = p.supplierPrice
+      const costPrice = parseFloat(p.costPrice ?? '0') || 0
+      const suggestedPrice = parseFloat(p.price ?? '0') || costPrice
+      const supplierPrice = suggestedPrice || costPrice
       const retailPrice = charmPrice(calculateRetailPrice(supplierPrice, DEFAULT_MARKUP))
-      const slug = slugify(p.name) + '-' + p.id
+
+      const slug = slugify(p.name ?? String(p.id)) + '-' + p.id
+      const images = extractImages(p.images)
+      const ean = extractEan(p.barcodes ?? null)
+      const vatPct = extractVat(p)
+      const stock = parseInt(p.stock ?? '0', 10) || 0
+
+      // Category: use mainCategory path
+      const mainCat = p.mainCategory ?? p.categories?.[0]
+      const categoryPath = mainCat ? buildCategoryPath(mainCat) : undefined
+      const categoryId = categoryPath ? categoryDbMap.get(categoryPath.toLowerCase()) ?? null : null
 
       const { error } = await supabase.from('products').upsert(
         {
-          dreamlove_id: p.id,
-          ean: p.ean ?? null,
-          name: p.name,
+          dreamlove_id: String(p.id),
+          ean: ean ?? null,
+          name: p.name ?? '',
           slug,
-          description: p.description ?? null,
-          category_id: p.categoryId ? categoryMap.get(p.categoryId) ?? null : null,
-          brand_id: p.brandId ? brandMap.get(p.brandId) ?? null : null,
-          brand: p.brand ?? null,
-          price_ex_vat: p.priceExVat,
-          price_with_vat: p.priceWithVat,
+          description: p.longDescription ?? p.description ?? null,
+          category_id: categoryId,
+          brand: p.brand?.name ?? null,
           supplier_price: supplierPrice,
-          supplier_shipping: p.supplierShipping,
+          price_ex_vat: costPrice,
+          price_with_vat: supplierPrice,
+          supplier_shipping: 0,
           retail_price: retailPrice,
           markup_pct: DEFAULT_MARKUP,
-          stock_quantity: p.stock,
-          images: p.images ?? [],
-          attributes: p.attributes ?? {},
-          weight_grams: p.weight ?? null,
-          is_active: p.stock > 0,
-          public_id: p.publicId ?? null,
-          updated_at_supplier: p.updatedAtSupplier ?? null,
-          release_date: p.releaseDate ?? null,
-          min_units: p.minUnits,
-          max_units: p.maxUnits,
-          vat_pct: p.vatPct ?? null,
-          is_sale: p.isSale,
-          is_new: p.isNew,
-          is_refrigerated: p.isRefrigerated,
-          width_mm: p.widthMm ?? null,
-          height_mm: p.heightMm ?? null,
-          depth_mm: p.depthMm ?? null,
-          hs_intrastat_code: p.hsIntrastatCode ?? null,
+          stock_quantity: stock,
+          images,
+          attributes: {},
+          weight_grams: p.weight ? parseFloat(p.weight) * 1000 : null,
+          is_active: p.active && stock > 0,
+          is_new: p.new ?? false,
+          is_sale: p.reducedPrice ?? false,
+          is_refrigerated: p.requiresRefrigeration ?? false,
+          width_mm: p.width ? parseFloat(p.width) : null,
+          height_mm: p.height ? parseFloat(p.height) : null,
+          depth_mm: p.length ? parseFloat(p.length) : null,
+          vat_pct: vatPct ?? null,
+          public_id: p.sku ?? null,
+          updated_at_supplier: p.updatedAt,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'dreamlove_id' },
@@ -190,12 +229,7 @@ export async function runFullSync(
         result.errors.push(`product ${p.id}: ${error.message}`)
       } else {
         result.synced++
-        syncedIds.add(p.id)
-
-        // Queue translations for batch upsert
-        if (p.translations && p.translations.length > 0) {
-          translationQueue.push({ dreamloveId: p.id, translations: p.translations })
-        }
+        syncedIds.add(String(p.id))
       }
     } catch (err) {
       result.errors.push(`product ${p.id}: ${String(err)}`)
@@ -208,55 +242,8 @@ export async function runFullSync(
 
   emit({ stage: 'catalog', synced: result.synced, total: toSync.length, message: 'Products done' })
 
-  // 7. Batch upsert translations
-  emit({ stage: 'translations', message: `Upserting translations for ${translationQueue.length} products...` })
-  if (translationQueue.length > 0) {
-    // Fetch all product UUIDs by dreamlove_id in chunks (PostgREST URL length limit)
-    const dlIds = translationQueue.map((q) => q.dreamloveId)
-    const ID_CHUNK = 200
-    const allDbProducts: { id: string; dreamlove_id: string }[] = []
-    for (let i = 0; i < dlIds.length; i += ID_CHUNK) {
-      const { data } = await supabase
-        .from('products')
-        .select('id, dreamlove_id')
-        .in('dreamlove_id', dlIds.slice(i, i + ID_CHUNK))
-      if (data) allDbProducts.push(...data)
-    }
-
-    const idMap = new Map(allDbProducts.map((p) => [p.dreamlove_id, p.id]))
-
-    // Build flat batch
-    const rows = translationQueue.flatMap((q) => {
-      const productId = idMap.get(q.dreamloveId)
-      if (!productId) return []
-      return q.translations.map((t) => ({
-        product_id: productId,
-        lang: t.lang,
-        title: t.title ?? null,
-        description: t.description ?? null,
-        html_description: t.htmlDescription ?? null,
-      }))
-    })
-
-    // Upsert in chunks of 50 (html_description can be very large)
-    const CHUNK = 50
-    let upserted = 0
-    let tErrors = 0
-    for (let i = 0; i < rows.length; i += CHUNK) {
-      const { error } = await supabase
-        .from('product_translations')
-        .upsert(rows.slice(i, i + CHUNK), { onConflict: 'product_id,lang' })
-      if (error) {
-        tErrors++
-      } else {
-        upserted += rows.slice(i, i + CHUNK).length
-      }
-    }
-    emit({ stage: 'translations', message: `Done — ${upserted} rows upserted, ${tErrors} chunk errors` })
-  }
-
-  // 9. Deactivate products no longer in feed
-  emit({ stage: 'deactivate', message: 'Checking for deactivated products...' })
+  // 6. Deactivate products no longer in feed
+  emit({ stage: 'deactivate', message: 'Checking for removed products...' })
   if (syncedIds.size > 0) {
     const { data: allActive } = await supabase
       .from('products')
@@ -265,7 +252,7 @@ export async function runFullSync(
 
     const toDeactivate = (allActive ?? [])
       .filter((p: { id: string; dreamlove_id: string }) => !syncedIds.has(p.dreamlove_id))
-      .map((p: { id: string; dreamlove_id: string }) => p.id)
+      .map((p: { id: string }) => p.id)
 
     if (toDeactivate.length > 0) {
       await supabase
@@ -279,4 +266,51 @@ export async function runFullSync(
 
   emit({ stage: 'done', synced: result.synced, message: 'Sync complete' })
   return result
+}
+
+// ---- Stock sync (lightweight — only updates stock_quantity) ----
+
+export async function syncStocks(
+  onProgress?: (event: SyncProgressEvent) => void,
+): Promise<{ updated: number; errors: string[] }> {
+  const emit = (event: SyncProgressEvent) => onProgress?.(event)
+  const supabase = await createServiceClient()
+  let updated = 0
+  const errors: string[] = []
+
+  emit({ stage: 'stock', message: 'Fetching stock updates...' })
+
+  let page = 1
+  while (true) {
+    try {
+      const res = await getAvailableStocks({ page, pageSize: PAGE_SIZE } as Parameters<typeof getAvailableStocks>[0] & { pageSize?: number })
+      const stocks = res['hydra:member']
+      if (!stocks || stocks.length === 0) break
+
+      for (const s of stocks) {
+        const dreamloveId = String(s.product.id)
+        const { error } = await supabase
+          .from('products')
+          .update({
+            stock_quantity: s.available,
+            is_active: s.available > 0,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('dreamlove_id', dreamloveId)
+
+        if (error) errors.push(`stock ${dreamloveId}: ${error.message}`)
+        else updated++
+      }
+
+      emit({ stage: 'stock', synced: updated, message: `Updated ${updated} stocks` })
+      if (!res['hydra:view']?.['hydra:next']) break
+      page++
+    } catch (err) {
+      errors.push(`stock page ${page}: ${String(err)}`)
+      break
+    }
+  }
+
+  emit({ stage: 'stock', synced: updated, message: `Stock sync done — ${updated} updated` })
+  return { updated, errors }
 }

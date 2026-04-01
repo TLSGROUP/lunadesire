@@ -58,9 +58,9 @@ export interface DreamLovePriceEntry {
   price: number         // supplier price
 }
 
-// SOAP order payload
+// REST API order payload
 export interface DreamLoveOrderPayload {
-  referenceId: string   // Our internal order UUID — used as idempotency key
+  referenceId: string
   shipping: {
     name: string
     street: string
@@ -71,26 +71,26 @@ export interface DreamLoveOrderPayload {
     email: string
   }
   items: Array<{
-    dreamloveId: string
+    dreamloveId: string   // numeric product id as string
     quantity: number
+    unitPrice?: number
   }>
+  customerTaxId?: string
 }
 
-// SOAP response from getBasicProductInfo
+// REST API stock info
 export interface DreamLoveStockInfo {
   dreamloveId: string
   available: boolean
   stock: number
   price?: number
-  rawXml: string        // always stored for debugging
 }
 
-// SOAP response from newOrder
+// REST API order result
 export interface DreamLoveOrderResult {
   success: boolean
   dreamloveOrderId?: string
   errorMessage?: string
-  rawXml: string
 }
 
 export interface SyncResult {

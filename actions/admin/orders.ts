@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { newOrder } from '@/lib/dreamlove/soap'
+import { createOrder } from '@/lib/dreamlove/api'
 import { revalidatePath } from 'next/cache'
 
 async function requireAdmin() {
@@ -47,21 +47,21 @@ export async function submitOrderToDreamLove(orderId: string) {
     email: string
   }
 
-  const result = await newOrder({
-    referenceId: order.id, // UUID — unique idempotency key
+  const result = await createOrder({
+    referenceId: order.id,
     shipping,
-    items: order.order_items.map((i: { dreamlove_id: string; quantity: number }) => ({
-      dreamloveId: i.dreamlove_id,
+    items: order.order_items.map((i: { dreamlove_id: string; quantity: number; unit_price: number }) => ({
+      productId: parseInt(i.dreamlove_id, 10),
       quantity: i.quantity,
+      unitPrice: i.unit_price,
     })),
   })
 
-  // Always log raw SOAP response
+  // Log result
   await supabase.from('sync_logs').insert({
     type: 'full',
     status: result.success ? 'success' : 'error',
     error_message: result.errorMessage ?? null,
-    raw_response: result.rawXml.slice(0, 5000), // cap length
     finished_at: new Date().toISOString(),
   })
 
@@ -73,14 +73,14 @@ export async function submitOrderToDreamLove(orderId: string) {
   await supabase
     .from('orders')
     .update({
-      dreamlove_order_id: result.dreamloveOrderId ?? null,
+      dreamlove_order_id: result.orderId ? String(result.orderId) : null,
       status: 'confirmed',
     })
     .eq('id', orderId)
 
   revalidatePath('/admin/orders')
   revalidatePath(`/admin/orders/${orderId}`)
-  return { success: true, dreamloveOrderId: result.dreamloveOrderId }
+  return { success: true, dreamloveOrderId: result.orderId ? String(result.orderId) : undefined }
 }
 
 export async function updateOrderStatus(

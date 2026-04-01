@@ -119,16 +119,24 @@ function parseCatalogXml(xml: string): DreamLoveProduct[] {
       const categoriesObj = i.categories as Record<string, unknown> | undefined
       const categoryArr = categoriesObj?.category
       if (Array.isArray(categoryArr) && categoryArr.length > 0) {
-        // Pick the most specific (deepest) category — most pipes in the name
-        const names = categoryArr
-          .map((c) => {
-            const cat = c as Record<string, unknown>
-            return cat['#text'] != null ? String(cat['#text']).trim() : null
-          })
-          .filter(Boolean) as string[]
-        // Sort by depth (number of '|') descending, pick deepest
-        names.sort((a, b) => b.split('|').length - a.split('|').length)
-        if (names.length > 0) categoryId = names[0]
+        // Prefer maincategory="1" — fallback to deepest (most pipes)
+        let mainCat: string | undefined
+        const allNames: string[] = []
+        for (const c of categoryArr) {
+          const cat = c as Record<string, unknown>
+          const text = cat['#text'] != null ? String(cat['#text']).trim() : null
+          if (!text) continue
+          allNames.push(text)
+          if (cat['@_maincategory'] === 1 || cat['@_maincategory'] === '1') {
+            mainCat = text
+          }
+        }
+        if (mainCat) {
+          categoryId = mainCat
+        } else {
+          allNames.sort((a, b) => b.split('|').length - a.split('|').length)
+          categoryId = allNames[0]
+        }
       }
 
       // <images><image preferred="1"><src>URL</src></image></images>
