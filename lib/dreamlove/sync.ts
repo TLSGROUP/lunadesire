@@ -6,8 +6,8 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import { calculateRetailPrice, charmPrice } from '@/lib/pricing'
 import { slugify } from '@/lib/utils'
-import { getProducts, getAvailableStocks } from './api'
-import type { ApiProduct, ApiCategory } from './api'
+import { getProducts, getAvailableStocks, getAllProductCategories, getEnglishCategoryNames } from './api'
+import type { ApiProduct, ApiProductCategory } from './api'
 import type { SyncResult } from './types'
 
 const DEFAULT_MARKUP = parseFloat(process.env.DEFAULT_MARKUP_PCT ?? '40')
@@ -20,15 +20,24 @@ export interface SyncProgressEvent {
   message?: string
 }
 
-// Build full category path name from nested parent chain
-// e.g. { name: 'Plugs', parent: { name: 'Anal', parent: { name: 'LOVETOYS', parent: null } } }
-// → 'LOVETOYS|Anal|Plugs'
-function buildCategoryPath(cat: ApiCategory): string {
+// Extract numeric ID from IRI string e.g. "/product_categories/299" → 299
+function iriToId(iri: string | null | undefined): number | null {
+  if (!iri) return null
+  const m = String(iri).match(/\/(\d+)$/)
+  return m ? parseInt(m[1], 10) : null
+}
+
+// Build full category path using embedded parent chain + English translations map
+// e.g. cat(id=299) → "LOVETOYS|Anal|Anal Plugs"
+function buildCategoryPath(
+  cat: ApiProductCategory,
+  enNames: Map<number, string>,
+): string {
   const parts: string[] = []
-  let current: ApiCategory | null = cat
+  let current: ApiProductCategory | null = cat
   while (current) {
-    if (current.name) parts.unshift(current.name)
-    current = current.parent ?? null
+    parts.unshift(enNames.get(current.id) ?? current.name ?? String(current.id))
+    current = current.parent
   }
   return parts.join('|')
 }
@@ -103,38 +112,50 @@ export async function runFullSync(
 
   emit({ stage: 'catalog', message: `Loaded ${allProducts.length} products` })
 
-  // 2. Extract and upsert unique categories
-  emit({ stage: 'categories', message: 'Syncing categories...' })
-  const categoryPathMap = new Map<string, ApiCategory>() // path → ApiCategory
+  // 2. Fetch all product categories + English translations from REST API
+  emit({ stage: 'categories', message: 'Fetching categories from REST API...' })
+  let apiCatMap: Map<number, ApiProductCategory>
+  let enCatNames: Map<number, string>
+  try {
+    ;[apiCatMap, enCatNames] = await Promise.all([
+      getAllProductCategories(),
+      getEnglishCategoryNames(),
+    ])
+    emit({ stage: 'categories', message: `Fetched ${apiCatMap.size} categories, ${enCatNames.size} EN translations` })
+  } catch (err) {
+    result.errors.push(`categories fetch: ${String(err)}`)
+    emit({ stage: 'categories', message: `Error fetching categories: ${String(err)}` })
+    apiCatMap = new Map()
+    enCatNames = new Map()
+  }
 
+  // Build set of all unique category paths referenced by products
+  // (using embedded parent chain from apiCatMap)
+  const categoryPaths = new Set<string>()
   for (const p of allProducts) {
-    const cat = p.mainCategory ?? p.categories?.[0]
+    const rawCat = p.mainCategory ?? p.categories?.[0]
+    if (!rawCat) continue
+    const id = typeof rawCat === 'string' ? iriToId(rawCat) : rawCat.id
+    if (id == null) continue
+    const cat = apiCatMap.get(id)
     if (!cat) continue
-    // Walk up the hierarchy and register all ancestor categories too
-    let current: ApiCategory | null = cat
-    const chain: ApiCategory[] = []
+    // Walk up the parent chain and register every ancestor path
+    let current: ApiProductCategory | null = cat
     while (current) {
-      chain.unshift(current)
-      current = current.parent ?? null
-    }
-    // Register each level
-    for (let i = 0; i < chain.length; i++) {
-      const partial = chain.slice(0, i + 1)
-      const path = partial.map((c) => c.name ?? '').filter(Boolean).join('|')
-      if (path && !categoryPathMap.has(path)) {
-        categoryPathMap.set(path, chain[i])
-      }
+      const path = buildCategoryPath(current, enCatNames)
+      if (path) categoryPaths.add(path)
+      current = current.parent
     }
   }
 
-  for (const [path] of categoryPathMap) {
+  for (const path of categoryPaths) {
     const slug = slugify(path)
     await supabase.from('categories').upsert(
       { dreamlove_id: path, name: path, slug },
       { onConflict: 'dreamlove_id' },
     )
   }
-  emit({ stage: 'categories', message: `Synced ${categoryPathMap.size} categories` })
+  emit({ stage: 'categories', message: `Synced ${categoryPaths.size} categories` })
 
   // 3. Load category map from DB (path → uuid)
   const { data: dbCategories } = await supabase
@@ -186,16 +207,18 @@ export async function runFullSync(
       const vatPct = extractVat(p)
       const stock = parseInt(p.stock ?? '0', 10) || 0
 
-      // Category: use mainCategory path
-      const mainCat = p.mainCategory ?? p.categories?.[0]
-      const categoryPath = mainCat ? buildCategoryPath(mainCat) : undefined
+      // Category: resolve IRI → category object → path → DB UUID
+      const rawCat = p.mainCategory ?? p.categories?.[0]
+      const catId = rawCat != null ? (typeof rawCat === 'string' ? iriToId(rawCat) : rawCat.id) : null
+      const cat = catId != null ? apiCatMap.get(catId) : undefined
+      const categoryPath = cat ? buildCategoryPath(cat, enCatNames) : undefined
       const categoryId = categoryPath ? categoryDbMap.get(categoryPath.toLowerCase()) ?? null : null
 
       const { error } = await supabase.from('products').upsert(
         {
           dreamlove_id: String(p.id),
           ean: ean ?? null,
-          name: p.name ?? '',
+          name: p.description ?? p.name ?? '',
           slug,
           description: p.longDescription ?? p.description ?? null,
           category_id: categoryId,
@@ -241,6 +264,32 @@ export async function runFullSync(
   }
 
   emit({ stage: 'catalog', synced: result.synced, total: toSync.length, message: 'Products done' })
+
+  // 5b. Batch-update category_id for ALL products (not just changed ones)
+  // Group by category_id → list of dreamlove product IDs
+  emit({ stage: 'categories', message: 'Updating category assignments for all products...' })
+  const catToDlIds = new Map<string, string[]>()
+  for (const p of allProducts) {
+    const rawCat = p.mainCategory ?? p.categories?.[0]
+    const catId = rawCat != null ? (typeof rawCat === 'string' ? iriToId(rawCat) : rawCat.id) : null
+    const cat = catId != null ? apiCatMap.get(catId) : undefined
+    const categoryPath = cat ? buildCategoryPath(cat, enCatNames) : undefined
+    const categoryUuid = categoryPath ? categoryDbMap.get(categoryPath.toLowerCase()) ?? null : null
+    if (categoryUuid) {
+      if (!catToDlIds.has(categoryUuid)) catToDlIds.set(categoryUuid, [])
+      catToDlIds.get(categoryUuid)!.push(String(p.id))
+    }
+  }
+  const CAT_BATCH = 500
+  for (const [categoryUuid, dlIds] of catToDlIds) {
+    for (let i = 0; i < dlIds.length; i += CAT_BATCH) {
+      await supabase
+        .from('products')
+        .update({ category_id: categoryUuid })
+        .in('dreamlove_id', dlIds.slice(i, i + CAT_BATCH))
+    }
+  }
+  emit({ stage: 'categories', message: `Category assignments updated for ${allProducts.length} products` })
 
   // 6. Deactivate products no longer in feed
   emit({ stage: 'deactivate', message: 'Checking for removed products...' })

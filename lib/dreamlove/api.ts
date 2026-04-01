@@ -70,8 +70,8 @@ export interface ApiProduct {
   length: string | null
   requiresRefrigeration: boolean | null
   brand: { id: number; name: string } | null
-  mainCategory: ApiCategory | null
-  categories: ApiCategory[]
+  mainCategory: ApiCategory | string | null
+  categories: Array<ApiCategory | string>
   images: ApiImage[]
   barcodes: Array<{ id: number; barcode: string; type: string | null }> | null
   externalId: string | null
@@ -83,6 +83,21 @@ export interface ApiCategory {
   name: string | null
   code: string | null
   parent: ApiCategory | null
+}
+
+export interface ApiProductCategory {
+  id: number
+  name: string | null
+  code: string | null
+  parent: ApiProductCategory | null  // fully embedded object
+}
+
+export interface ApiProductCategoriesResponse {
+  'hydra:member': ApiProductCategory[]
+  'hydra:totalItems': number
+  'hydra:view'?: {
+    'hydra:next'?: string
+  }
 }
 
 export interface ApiImage {
@@ -145,6 +160,53 @@ export async function getProducts(params: {
 
 export async function getProduct(id: number): Promise<ApiProduct> {
   return apiFetch<ApiProduct>(`/products/${id}`)
+}
+
+// ---- Product Categories ----------------------------------------
+
+// Fetch English (language/51) name translations for all product categories
+// Returns Map<categoryId, englishName>
+export async function getEnglishCategoryNames(): Promise<Map<number, string>> {
+  const result = new Map<number, string>()
+  let page = 1
+  while (true) {
+    const q = new URLSearchParams()
+    q.set('language', '/languages/51')
+    q.set('field', 'name')
+    q.set('page', String(page))
+    q.set('itemsPerPage', '50')
+    const res = await apiFetch<{ 'hydra:member': Array<{ value: string | null; productCategory: string }>; 'hydra:view'?: { 'hydra:next'?: string } }>(
+      `/product_category_translations?${q}`,
+      { headers: { 'Accept': 'application/ld+json' } },
+    )
+    for (const t of res['hydra:member']) {
+      if (!t.value) continue
+      const m = String(t.productCategory).match(/\/(\d+)$/)
+      if (m) result.set(parseInt(m[1], 10), t.value)
+    }
+    if (!res['hydra:view']?.['hydra:next']) break
+    page++
+  }
+  return result
+}
+
+export async function getAllProductCategories(): Promise<Map<number, ApiProductCategory>> {
+  const result = new Map<number, ApiProductCategory>()
+  let page = 1
+  while (true) {
+    const q = new URLSearchParams()
+    q.set('page', String(page))
+    q.set('itemsPerPage', '200')
+    const res = await apiFetch<ApiProductCategoriesResponse>(`/product_categories?${q}`, {
+      headers: { 'Accept': 'application/ld+json' },
+    })
+    for (const cat of res['hydra:member']) {
+      result.set(cat.id, cat)
+    }
+    if (!res['hydra:view']?.['hydra:next']) break
+    page++
+  }
+  return result
 }
 
 // ---- Stock -----------------------------------------------------

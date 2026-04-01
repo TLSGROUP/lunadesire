@@ -14,25 +14,25 @@ export async function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-xs tracking-widest uppercase text-[#f2ede8]">
-          <Link href="/products?category=lovetoys-LOVETOYS" className="hover:text-[#c5a028] transition-colors duration-300">
+          <Link href="/products?category=lovetoys" className="hover:text-[#c5a028] transition-colors duration-300">
             Lovetoys
           </Link>
-          <Link href="/products?category=fashion-lingerie-FASHION+%26+LINGERIE" className="hover:text-[#c5a028] transition-colors duration-300">
+          <Link href="/products?category=fashion-lingerie" className="hover:text-[#c5a028] transition-colors duration-300">
             Lingerie
           </Link>
-          <Link href="/products?category=sm-bondage-SM+%26+BONDAGE" className="hover:text-[#c5a028] transition-colors duration-300">
+          <Link href="/products?category=sm-bondage" className="hover:text-[#c5a028] transition-colors duration-300">
             SM & Bondage
           </Link>
-          <Link href="/products?category=sex-drugstore-SEX+DRUGSTORE" className="hover:text-[#c5a028] transition-colors duration-300">
+          <Link href="/products?category=sex-drugstore" className="hover:text-[#c5a028] transition-colors duration-300">
             Drugstore
           </Link>
-          <Link href="/products?category=condoms-CONDOMS" className="hover:text-[#c5a028] transition-colors duration-300">
+          <Link href="/products?category=condoms" className="hover:text-[#c5a028] transition-colors duration-300">
             Condoms
           </Link>
-          <Link href="/products?category=games-GAMES" className="hover:text-[#c5a028] transition-colors duration-300">
+          <Link href="/products?category=games" className="hover:text-[#c5a028] transition-colors duration-300">
             Games
           </Link>
-          <Link href="/products?category=assorted-items-ASSORTED+ITEMS" className="hover:text-[#c5a028] transition-colors duration-300">
+          <Link href="/products?category=assorted-items" className="hover:text-[#c5a028] transition-colors duration-300">
             Assorted
           </Link>
         </nav>
