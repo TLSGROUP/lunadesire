@@ -6,7 +6,7 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import { calculateRetailPrice, charmPrice } from '@/lib/pricing'
 import { slugify } from '@/lib/utils'
-import { getProducts, getAvailableStocks, getAllProductCategories, getEnglishCategoryNames, getBrandLogoMap } from './api'
+import { getProducts, getAvailableStocks, getAllProductCategories, getEnglishCategoryNames, getBrandMaps } from './api'
 import type { ApiProduct, ApiProductCategory } from './api'
 import type { SyncResult } from './types'
 
@@ -117,12 +117,17 @@ export async function runFullSync(
   let apiCatMap: Map<number, ApiProductCategory>
   let enCatNames: Map<number, string>
   let brandLogoMap: Map<string, string>
+  let brandById: Map<number, { name: string; logo: string | null }>
   try {
-    ;[apiCatMap, enCatNames, brandLogoMap] = await Promise.all([
+    const [cats, enNames, brandMaps] = await Promise.all([
       getAllProductCategories(),
       getEnglishCategoryNames(),
-      getBrandLogoMap(),
+      getBrandMaps(),
     ])
+    apiCatMap = cats
+    enCatNames = enNames
+    brandLogoMap = brandMaps.byName
+    brandById = brandMaps.byId
     emit({ stage: 'categories', message: `Fetched ${apiCatMap.size} categories, ${enCatNames.size} EN translations, ${brandLogoMap.size} brand logos` })
   } catch (err) {
     result.errors.push(`categories fetch: ${String(err)}`)
@@ -130,6 +135,7 @@ export async function runFullSync(
     apiCatMap = new Map()
     enCatNames = new Map()
     brandLogoMap = new Map()
+    brandById = new Map()
   }
 
   // Build set of all unique category paths referenced by products
@@ -217,12 +223,24 @@ export async function runFullSync(
       const categoryPath = cat ? buildCategoryPath(cat, enCatNames) : undefined
       const categoryId = categoryPath ? categoryDbMap.get(categoryPath.toLowerCase()) ?? null : null
 
-      const brandName = p.brand?.name ?? null
-      const brandLogo = brandName
-        ? (brandLogoMap.get(brandName.toLowerCase()) ??
-           [...brandLogoMap.entries()].find(([key]) => brandName.toLowerCase().includes(key))?.[1] ??
-           null)
-        : null
+      // Resolve brand — API may return either {id, name} object or IRI string "/brands/634"
+      let brandName: string | null = null
+      let brandLogo: string | null = null
+      if (p.brand) {
+        if (typeof p.brand === 'string') {
+          const brandId = iriToId(p.brand)
+          const entry = brandId != null ? brandById.get(brandId) : undefined
+          brandName = entry?.name ?? null
+          brandLogo = entry?.logo ?? null
+        } else {
+          brandName = p.brand.name ?? null
+          brandLogo = brandName
+            ? (brandLogoMap.get(brandName.toLowerCase()) ??
+               [...brandLogoMap.entries()].find(([key]) => brandName!.toLowerCase().includes(key))?.[1] ??
+               null)
+            : null
+        }
+      }
 
       const { error } = await supabase.from('products').upsert(
         {
@@ -306,10 +324,17 @@ export async function runFullSync(
   emit({ stage: 'catalog', message: 'Updating brand logos for all products...' })
   const brandToDlIds = new Map<string, string[]>() // logoUrl → dreamlove IDs
   for (const p of allProducts) {
-    if (!p.brand?.name) continue
-    const name = p.brand.name.toLowerCase()
-    const logo = brandLogoMap.get(name) ??
-      [...brandLogoMap.entries()].find(([key]) => name.includes(key))?.[1]
+    if (!p.brand) continue
+    let logo: string | null | undefined
+    if (typeof p.brand === 'string') {
+      const brandId = iriToId(p.brand)
+      logo = brandId != null ? brandById.get(brandId)?.logo : undefined
+    } else {
+      const name = p.brand.name?.toLowerCase()
+      if (!name) continue
+      logo = brandLogoMap.get(name) ??
+        [...brandLogoMap.entries()].find(([key]) => name.includes(key))?.[1]
+    }
     if (!logo) continue
     if (!brandToDlIds.has(logo)) brandToDlIds.set(logo, [])
     brandToDlIds.get(logo)!.push(String(p.id))

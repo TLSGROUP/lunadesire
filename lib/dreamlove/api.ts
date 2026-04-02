@@ -203,25 +203,37 @@ export async function getEnglishCategoryNames(): Promise<Map<number, string>> {
   return result
 }
 
-// Fetch all brands and return Map<brandName (lowercase), logoUrl>
+// Fetch all brands and return:
+// - Map<brandName (lowercase), logoUrl>  — for name-based lookup
+// - Map<brandId, {name, logo}>           — for IRI-based lookup ("/brands/634")
 export async function getBrandLogoMap(): Promise<Map<string, string>> {
-  const result = new Map<string, string>()
+  const { byName } = await getBrandMaps()
+  return byName
+}
+
+export async function getBrandMaps(): Promise<{
+  byName: Map<string, string>
+  byId: Map<number, { name: string; logo: string | null }>
+}> {
+  const byName = new Map<string, string>()
+  const byId = new Map<number, { name: string; logo: string | null }>()
   let page = 1
   while (true) {
     const q = new URLSearchParams({ page: String(page), itemsPerPage: '100' })
     const res = await apiFetch<{
-      'hydra:member': Array<{ name: string; image: { files: Array<{ url: string }> } | null }>
+      'hydra:member': Array<{ '@id': string; id: number; name: string; image: { files: Array<{ url: string }> } | null }>
       'hydra:view'?: { 'hydra:next'?: string }
     }>(`/brands?${q}`, { headers: { 'Accept': 'application/ld+json' } })
     for (const brand of res['hydra:member']) {
       if (!brand.name) continue
-      const url = brand.image?.files?.[0]?.url
-      if (url) result.set(brand.name.toLowerCase(), url)
+      const url = brand.image?.files?.[0]?.url ?? null
+      byId.set(brand.id, { name: brand.name, logo: url })
+      if (url) byName.set(brand.name.toLowerCase(), url)
     }
     if (!res['hydra:view']?.['hydra:next']) break
     page++
   }
-  return result
+  return { byName, byId }
 }
 
 export async function getAllProductCategories(): Promise<Map<number, ApiProductCategory>> {
