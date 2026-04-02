@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/pricing'
 import { AddToCartButton } from '@/components/shop/AddToCartButton'
+import { ProductImageGallery } from '@/components/shop/ProductImageGallery'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -34,42 +35,13 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound()
 
   const images: string[] = product.images ?? []
-  const primaryImage = images[0] ?? null
 
   return (
-    <div className="pt-20 min-h-screen">
+    <div className="pt-20 min-h-screen bg-white">
       <div className="max-w-6xl mx-auto px-6 py-16">
         <div className="grid md:grid-cols-2 gap-16">
           {/* Images */}
-          <div>
-            <div className="aspect-square bg-[#0d080f] overflow-hidden mb-3">
-              {primaryImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={primaryImage}
-                  alt={product.name}
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-[#333]">
-                  <span className="text-xs">No image</span>
-                </div>
-              )}
-            </div>
-            {images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
-                {images.slice(1, 5).map((img, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={i}
-                    src={img}
-                    alt={`${product.name} ${i + 2}`}
-                    className="w-full aspect-square object-contain bg-[#0d080f]"
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          <ProductImageGallery images={images} name={product.name} />
 
           {/* Details */}
           <div className="space-y-6 pt-4">
@@ -79,16 +51,16 @@ export default async function ProductPage({ params }: Props) {
               </p>
             )}
 
-            <h1 className="font-serif text-3xl text-[#f2ede8] leading-snug">
+            <h1 className="font-serif text-3xl text-gray-900 leading-snug">
               {product.name}
             </h1>
 
-            <p className="text-2xl text-[#f2ede8]">{formatPrice(product.retail_price)}</p>
+            <p className="text-2xl font-semibold text-gray-900">{formatPrice(product.retail_price)}</p>
 
             <div className="flex items-center gap-2">
-              <div className={`w-1.5 h-1.5 rounded-full ${product.stock_quantity > 0 ? 'bg-emerald-500' : 'bg-red-700'}`} />
-              <span className="text-xs tracking-wide text-[#7a7078]">
-                {product.stock_quantity > 0 ? 'In stock' : 'Out of stock'}
+              <div className={`w-1.5 h-1.5 rounded-full ${product.stock_quantity > 0 ? 'bg-emerald-500' : 'bg-red-500'}`} />
+              <span className="text-xs tracking-wide text-gray-500">
+                {product.stock_quantity > 0 ? `In stock (${product.stock_quantity})` : 'Out of stock'}
               </span>
             </div>
 
@@ -98,18 +70,18 @@ export default async function ProductPage({ params }: Props) {
               </div>
             )}
 
-            <div className="w-12 h-px bg-[#1e181d]" />
+            <div className="w-12 h-px bg-gray-200" />
 
             {product.description && (
               <div
-                className="text-sm text-[#7a7078] leading-relaxed prose prose-sm prose-invert max-w-none
-                  prose-p:text-[#7a7078] prose-li:text-[#7a7078] prose-strong:text-[#f2ede8]"
+                className="text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none
+                  prose-p:text-gray-600 prose-li:text-gray-600 prose-strong:text-gray-900"
                 dangerouslySetInnerHTML={{ __html: product.description }}
               />
             )}
 
             {product.ean && (
-              <p className="text-xs text-[#4a4448]">EAN: {product.ean}</p>
+              <p className="text-xs text-gray-400">EAN: {product.ean}</p>
             )}
           </div>
         </div>
