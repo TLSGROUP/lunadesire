@@ -29,23 +29,36 @@ async function getToken(): Promise<string> {
   return cachedToken
 }
 
-async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+async function apiFetch<T>(path: string, options?: RequestInit, retries = 3): Promise<T> {
   const token = await getToken()
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-    cache: 'no-store',
-  })
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`DreamLove API ${res.status} ${path}: ${text.slice(0, 300)}`)
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 30_000) // 30s per request
+      const res = await fetch(`${API_BASE}${path}`, {
+        ...options,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          ...options?.headers,
+        },
+        cache: 'no-store',
+        signal: controller.signal,
+      })
+      clearTimeout(timeout)
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(`DreamLove API ${res.status} ${path}: ${text.slice(0, 300)}`)
+      }
+      return res.json() as Promise<T>
+    } catch (err) {
+      if (attempt === retries) throw err
+      // Exponential backoff: 2s, 4s
+      await new Promise((r) => setTimeout(r, attempt * 2000))
+    }
   }
-  return res.json()
+  throw new Error(`apiFetch: exhausted retries for ${path}`)
 }
 
 // ---- Types -------------------------------------------------------
@@ -190,6 +203,27 @@ export async function getEnglishCategoryNames(): Promise<Map<number, string>> {
   return result
 }
 
+// Fetch all brands and return Map<brandName (lowercase), logoUrl>
+export async function getBrandLogoMap(): Promise<Map<string, string>> {
+  const result = new Map<string, string>()
+  let page = 1
+  while (true) {
+    const q = new URLSearchParams({ page: String(page), itemsPerPage: '100' })
+    const res = await apiFetch<{
+      'hydra:member': Array<{ name: string; image: { files: Array<{ url: string }> } | null }>
+      'hydra:view'?: { 'hydra:next'?: string }
+    }>(`/brands?${q}`, { headers: { 'Accept': 'application/ld+json' } })
+    for (const brand of res['hydra:member']) {
+      if (!brand.name) continue
+      const url = brand.image?.files?.[0]?.url
+      if (url) result.set(brand.name.toLowerCase(), url)
+    }
+    if (!res['hydra:view']?.['hydra:next']) break
+    page++
+  }
+  return result
+}
+
 export async function getAllProductCategories(): Promise<Map<number, ApiProductCategory>> {
   const result = new Map<number, ApiProductCategory>()
   let page = 1
@@ -207,6 +241,18 @@ export async function getAllProductCategories(): Promise<Map<number, ApiProductC
     page++
   }
   return result
+}
+
+// ---- Single product stock (realtime check) ---------------------
+
+export async function getProductStock(dreamloveId: string): Promise<{ available: boolean; stock: number }> {
+  const res = await apiFetch<ApiStocksResponse>(
+    `/available_stocks?product=/products/${dreamloveId}&itemsPerPage=1`,
+    { headers: { 'Accept': 'application/ld+json' } },
+  )
+  const entry = res['hydra:member']?.[0]
+  const stock = entry?.available ?? 0
+  return { available: stock > 0, stock }
 }
 
 // ---- Stock -----------------------------------------------------

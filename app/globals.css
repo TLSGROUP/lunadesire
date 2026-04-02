@@ -11,7 +11,7 @@
   --color-border: #1e181d;
   --color-crimson: #8b1a3a;
   --color-crimson-hover: #a82148;
-  --color-gold: #c5a028;
+  --color-gold: #d4006e;
   --color-text-primary: #f2ede8;
   --color-text-muted: #7a7078;
   --color-text-dim: #4a4448;
@@ -51,11 +51,11 @@ body {
 .gold-gradient-text {
   background: linear-gradient(
     135deg,
-    #c5a028 0%,
+    #d4006e 0%,
     #e8c84a 35%,
-    #c5a028 55%,
+    #d4006e 55%,
     #9a7a18 80%,
-    #c5a028 100%
+    #d4006e 100%
   );
   -webkit-background-clip: text;
   background-clip: text;

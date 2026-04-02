@@ -74,7 +74,7 @@ export default async function ProductPage({ params }: Props) {
           {/* Details */}
           <div className="space-y-6 pt-4">
             {product.brand && (
-              <p className="text-xs tracking-widest uppercase text-[#c5a028]">
+              <p className="text-xs tracking-widest uppercase text-[#d4006e]">
                 {product.brand}
               </p>
             )}

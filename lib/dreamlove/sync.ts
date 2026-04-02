@@ -6,7 +6,7 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import { calculateRetailPrice, charmPrice } from '@/lib/pricing'
 import { slugify } from '@/lib/utils'
-import { getProducts, getAvailableStocks, getAllProductCategories, getEnglishCategoryNames } from './api'
+import { getProducts, getAvailableStocks, getAllProductCategories, getEnglishCategoryNames, getBrandLogoMap } from './api'
 import type { ApiProduct, ApiProductCategory } from './api'
 import type { SyncResult } from './types'
 
@@ -116,17 +116,20 @@ export async function runFullSync(
   emit({ stage: 'categories', message: 'Fetching categories from REST API...' })
   let apiCatMap: Map<number, ApiProductCategory>
   let enCatNames: Map<number, string>
+  let brandLogoMap: Map<string, string>
   try {
-    ;[apiCatMap, enCatNames] = await Promise.all([
+    ;[apiCatMap, enCatNames, brandLogoMap] = await Promise.all([
       getAllProductCategories(),
       getEnglishCategoryNames(),
+      getBrandLogoMap(),
     ])
-    emit({ stage: 'categories', message: `Fetched ${apiCatMap.size} categories, ${enCatNames.size} EN translations` })
+    emit({ stage: 'categories', message: `Fetched ${apiCatMap.size} categories, ${enCatNames.size} EN translations, ${brandLogoMap.size} brand logos` })
   } catch (err) {
     result.errors.push(`categories fetch: ${String(err)}`)
     emit({ stage: 'categories', message: `Error fetching categories: ${String(err)}` })
     apiCatMap = new Map()
     enCatNames = new Map()
+    brandLogoMap = new Map()
   }
 
   // Build set of all unique category paths referenced by products
@@ -214,6 +217,13 @@ export async function runFullSync(
       const categoryPath = cat ? buildCategoryPath(cat, enCatNames) : undefined
       const categoryId = categoryPath ? categoryDbMap.get(categoryPath.toLowerCase()) ?? null : null
 
+      const brandName = p.brand?.name ?? null
+      const brandLogo = brandName
+        ? (brandLogoMap.get(brandName.toLowerCase()) ??
+           [...brandLogoMap.entries()].find(([key]) => brandName.toLowerCase().includes(key))?.[1] ??
+           null)
+        : null
+
       const { error } = await supabase.from('products').upsert(
         {
           dreamlove_id: String(p.id),
@@ -222,7 +232,8 @@ export async function runFullSync(
           slug,
           description: p.longDescription ?? p.description ?? null,
           category_id: categoryId,
-          brand: p.brand?.name ?? null,
+          brand: brandName,
+          brand_logo: brandLogo,
           supplier_price: supplierPrice,
           price_ex_vat: costPrice,
           price_with_vat: supplierPrice,
@@ -290,6 +301,29 @@ export async function runFullSync(
     }
   }
   emit({ stage: 'categories', message: `Category assignments updated for ${allProducts.length} products` })
+
+  // 5c. Batch-update brand_logo for ALL products
+  emit({ stage: 'catalog', message: 'Updating brand logos for all products...' })
+  const brandToDlIds = new Map<string, string[]>() // logoUrl → dreamlove IDs
+  for (const p of allProducts) {
+    if (!p.brand?.name) continue
+    const name = p.brand.name.toLowerCase()
+    const logo = brandLogoMap.get(name) ??
+      [...brandLogoMap.entries()].find(([key]) => name.includes(key))?.[1]
+    if (!logo) continue
+    if (!brandToDlIds.has(logo)) brandToDlIds.set(logo, [])
+    brandToDlIds.get(logo)!.push(String(p.id))
+  }
+  const BRAND_BATCH = 500
+  for (const [logoUrl, dlIds] of brandToDlIds) {
+    for (let i = 0; i < dlIds.length; i += BRAND_BATCH) {
+      await supabase
+        .from('products')
+        .update({ brand_logo: logoUrl })
+        .in('dreamlove_id', dlIds.slice(i, i + BRAND_BATCH))
+    }
+  }
+  emit({ stage: 'catalog', message: `Brand logos updated for ${[...brandToDlIds.values()].flat().length} products` })
 
   // 6. Deactivate products no longer in feed
   emit({ stage: 'deactivate', message: 'Checking for removed products...' })

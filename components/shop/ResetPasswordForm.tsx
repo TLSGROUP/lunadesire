@@ -44,7 +44,7 @@ export function ResetPasswordForm() {
           name="email"
           type="email"
           required
-          className="w-full bg-[#0d080f] border border-[#1e181d] text-[#f2ede8] px-4 py-3 text-sm focus:outline-none focus:border-[#c5a028] transition-colors"
+          className="w-full bg-[#0d080f] border border-[#1e181d] text-[#f2ede8] px-4 py-3 text-sm focus:outline-none focus:border-[#d4006e] transition-colors"
         />
       </div>
       <button

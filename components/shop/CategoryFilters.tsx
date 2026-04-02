@@ -4,20 +4,25 @@ interface Props {
   subcategories: { slug: string; name: string }[]
   currentSlug: string | null
   containerSlug: string | null
+  newMode?: boolean
 }
 
-export function CategoryFilters({ subcategories, currentSlug, containerSlug }: Props) {
+export function CategoryFilters({ subcategories, currentSlug, containerSlug, newMode }: Props) {
+  const allHref = newMode
+    ? '/products?new=true'
+    : containerSlug ? `/products?category=${encodeURIComponent(containerSlug)}` : '/products'
+
   return (
-    <div className="border-b border-[#1e181d]">
+    <div className="border-b border-gray-200">
       <div className="max-w-[1600px] mx-auto px-6">
         <div className="flex flex-wrap gap-2 py-4">
-          {/* "All" pill — links back to parent or /products */}
+          {/* "All" pill */}
           <Link
-            href={containerSlug ? `/products?category=${encodeURIComponent(containerSlug)}` : '/products'}
+            href={allHref}
             className={`shrink-0 px-4 py-1.5 text-xs tracking-widest uppercase border transition-colors duration-200 ${
               !currentSlug
-                ? 'border-[#c5a028] text-[#c5a028]'
-                : 'border-[#6b6568] text-[#6b6568] hover:border-[#c5a028] hover:text-[#c5a028]'
+                ? 'border-[#d4006e] text-[#d4006e]'
+                : 'border-gray-300 text-gray-500 hover:border-[#d4006e] hover:text-[#d4006e]'
             }`}
           >
             All
@@ -26,11 +31,11 @@ export function CategoryFilters({ subcategories, currentSlug, containerSlug }: P
           {subcategories.map((cat) => (
             <Link
               key={cat.slug}
-              href={`/products?category=${encodeURIComponent(cat.slug)}`}
+              href={newMode ? `/products?new=true&category=${encodeURIComponent(cat.slug)}` : `/products?category=${encodeURIComponent(cat.slug)}`}
               className={`shrink-0 px-4 py-1.5 text-xs tracking-widest uppercase border transition-colors duration-200 ${
                 currentSlug === cat.slug
-                  ? 'border-[#c5a028] text-[#c5a028]'
-                  : 'border-[#6b6568] text-[#6b6568] hover:border-[#c5a028] hover:text-[#c5a028]'
+                  ? 'border-[#d4006e] text-[#d4006e]'
+                  : 'border-gray-300 text-gray-500 hover:border-[#d4006e] hover:text-[#d4006e]'
               }`}
             >
               {cat.name}

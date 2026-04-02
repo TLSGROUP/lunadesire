@@ -6,7 +6,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
           <div>
-            <p className="text-xl tracking-[0.35em] uppercase font-[family-name:var(--font-playfair)] font-bold text-[#f2ede8] mb-3">LunaDesire</p>
+            <p className="text-xl tracking-[0.35em] uppercase font-[family-name:var(--font-playfair)] font-bold text-[#f2ede8] mb-3">Luna<span className="text-[#d4006e]">Desire</span></p>
             <p className="text-xs text-[#4a4448] leading-relaxed">
               Redefining intimacy through luxury design and uncompromising quality.
             </p>
@@ -17,7 +17,7 @@ export function Footer() {
             <ul className="space-y-2">
               {['Toys & Devices', 'Sensual Care', 'Lingerie', 'Gifts'].map((item) => (
                 <li key={item}>
-                  <Link href="/products" className="text-xs text-[#4a4448] hover:text-[#c5a028] transition-colors duration-300">
+                  <Link href="/products" className="text-xs text-[#4a4448] hover:text-[#d4006e] transition-colors duration-300">
                     {item}
                   </Link>
                 </li>
@@ -30,7 +30,7 @@ export function Footer() {
             <ul className="space-y-2">
               {['Our Story', 'Journal', 'Materials', 'FAQ'].map((item) => (
                 <li key={item}>
-                  <Link href="/" className="text-xs text-[#4a4448] hover:text-[#c5a028] transition-colors duration-300">
+                  <Link href="/" className="text-xs text-[#4a4448] hover:text-[#d4006e] transition-colors duration-300">
                     {item}
                   </Link>
                 </li>
@@ -45,9 +45,9 @@ export function Footer() {
               <input
                 type="email"
                 placeholder="Your email address"
-                className="flex-1 bg-transparent border-b border-[#1e181d] text-xs text-[#f2ede8] placeholder-[#4a4448] pb-1 outline-none focus:border-[#c5a028] transition-colors duration-300"
+                className="flex-1 bg-transparent border-b border-[#1e181d] text-xs text-[#f2ede8] placeholder-[#4a4448] pb-1 outline-none focus:border-[#d4006e] transition-colors duration-300"
               />
-              <button type="submit" className="text-xs tracking-widest uppercase text-[#c5a028] hover:text-[#f2ede8] transition-colors duration-300">
+              <button type="submit" className="text-xs tracking-widest uppercase text-[#d4006e] hover:text-[#f2ede8] transition-colors duration-300">
                 Join
               </button>
             </form>
@@ -60,8 +60,8 @@ export function Footer() {
           </p>
           <p className="text-xs text-[#4a4448]">For adults 18+ only.</p>
           <div className="flex gap-6">
-            <Link href="/" className="text-xs text-[#4a4448] hover:text-[#c5a028] transition-colors duration-300">Privacy Policy</Link>
-            <Link href="/" className="text-xs text-[#4a4448] hover:text-[#c5a028] transition-colors duration-300">Terms</Link>
+            <Link href="/" className="text-xs text-[#4a4448] hover:text-[#d4006e] transition-colors duration-300">Privacy Policy</Link>
+            <Link href="/" className="text-xs text-[#4a4448] hover:text-[#d4006e] transition-colors duration-300">Terms</Link>
           </div>
         </div>
       </div>

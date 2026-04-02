@@ -10,13 +10,13 @@ export default async function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="pt-20 min-h-screen flex items-center justify-center">
+      <div className="pt-20 min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-xs tracking-widest uppercase text-[#4a4448] mb-6">Your Cart</p>
-          <h1 className="font-serif text-3xl text-[#f2ede8] mb-8">Your cart is empty</h1>
+          <h1 className="font-serif text-3xl text-[#d4006e] mb-8">Your cart is empty</h1>
           <Link
             href="/products"
-            className="inline-block border border-[#c5a028] text-[#c5a028] px-8 py-3 text-xs tracking-widest uppercase hover:bg-[#c5a028] hover:text-black transition-colors duration-300"
+            className="inline-block border border-[#d4006e] text-[#d4006e] px-8 py-3 text-xs tracking-widest uppercase hover:bg-[#d4006e] hover:text-black transition-colors duration-300"
           >
             Browse Collection
           </Link>
@@ -31,11 +31,11 @@ export default async function CartPage() {
   }, 0)
 
   return (
-    <div className="pt-20 min-h-screen bg-[#020104]">
-      <div className="border-b border-[#1e181d] py-12">
+    <div className="pt-20 min-h-screen bg-white">
+      <div className="border-b border-gray-200 py-12">
         <div className="max-w-4xl mx-auto px-6">
-          <p className="text-xs tracking-widest uppercase text-[#c5a028] mb-3">Your Cart</p>
-          <h1 className="font-serif text-4xl text-[#f2ede8]">Shopping Cart</h1>
+          <p className="text-xs tracking-widest uppercase text-[#d4006e] mb-3">Your Cart</p>
+          <h1 className="font-serif text-4xl text-gray-900">Shopping Cart</h1>
         </div>
       </div>
 
@@ -48,22 +48,22 @@ export default async function CartPage() {
           </div>
 
           <div>
-            <div className="border border-[#1e181d] p-6 space-y-4">
-              <h2 className="text-xs tracking-widest uppercase text-[#7a7078]">Order Summary</h2>
-              <div className="border-t border-[#1e181d] pt-4 flex justify-between items-center">
-                <span className="text-sm text-[#7a7078]">Subtotal</span>
-                <span className="text-lg text-[#f2ede8]">{formatPrice(subtotal)}</span>
+            <div className="border border-gray-200 p-6 space-y-4">
+              <h2 className="text-xs tracking-widest uppercase text-gray-500">Order Summary</h2>
+              <div className="border-t border-gray-200 pt-4 flex justify-between items-center">
+                <span className="text-sm text-gray-500">Subtotal</span>
+                <span className="text-lg text-gray-900 font-semibold">{formatPrice(subtotal)}</span>
               </div>
-              <p className="text-xs text-[#4a4448]">Shipping calculated at checkout</p>
+              <p className="text-xs text-gray-400">Shipping calculated at checkout</p>
               <Link
                 href="/checkout"
-                className="block w-full text-center bg-[#8b1a3a] text-white py-4 text-xs tracking-widest uppercase hover:bg-[#a82148] transition-colors duration-300"
+                className="block w-full text-center bg-[#d4006e] text-white py-4 text-xs tracking-widest uppercase hover:bg-[#b8005e] transition-colors duration-300"
               >
                 Proceed to Checkout
               </Link>
               <Link
                 href="/products"
-                className="block w-full text-center border border-[#1e181d] text-[#7a7078] py-3 text-xs tracking-widest uppercase hover:border-[#c5a028] hover:text-[#c5a028] transition-colors duration-300"
+                className="block w-full text-center border border-gray-300 text-gray-500 py-3 text-xs tracking-widest uppercase hover:border-[#d4006e] hover:text-[#d4006e] transition-colors duration-300"
               >
                 Continue Shopping
               </Link>

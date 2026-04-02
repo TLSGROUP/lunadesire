@@ -8,7 +8,7 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen flex items-center justify-center px-4 bg-[#07030b]">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
-          <p className="text-xs tracking-widest uppercase text-[#c5a028] mb-4">Account</p>
+          <p className="text-xs tracking-widest uppercase text-[#d4006e] mb-4">Account</p>
           <h1 className="font-serif text-3xl text-[#f2ede8]">Reset Password</h1>
         </div>
 

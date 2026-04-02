@@ -8,28 +8,39 @@ export const metadata = { title: 'Home' }
 export default async function HomePage() {
   const supabase = await createClient()
 
-  const { data: newArrivals } = await supabase
+  const { data: newArrivalsRaw } = await supabase
     .from('products')
-    .select('id, name, slug, retail_price, images, brand, stock_quantity')
+    .select('id, name, slug, retail_price, images, brand, stock_quantity, is_new, brand_logo')
     .eq('is_active', true)
     .eq('is_new', true)
-    .order('created_at', { ascending: false })
+    .not('images', 'is', null)
     .limit(499)
+
+  // Fisher-Yates shuffle so same-brand products don't cluster
+  const newArrivals = [...(newArrivalsRaw ?? [])]
+  for (let i = newArrivals.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[newArrivals[i], newArrivals[j]] = [newArrivals[j], newArrivals[i]]
+  }
 
   return (
     <>
       {/* Hero */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: 'url(/hero-bg.png)' }}
+        {/* Background video */}
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          src="/video-bg.mov"
+          autoPlay
+          muted
+          loop
+          playsInline
         />
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-black/55" />
 
         <div className="relative z-10 text-center px-6 max-w-3xl mx-auto">
-          <p className="text-xs tracking-[0.4em] uppercase text-[#c5a028] mb-6">
+          <p className="text-xs tracking-[0.4em] uppercase text-[#d4006e] mb-6">
             The Art of Intimacy
           </p>
           <h1 className="font-serif text-6xl md:text-8xl text-[#f2ede8] leading-tight mb-6">
@@ -41,7 +52,7 @@ export default async function HomePage() {
           </p>
           <Link
             href="/products"
-            className="inline-block px-10 py-4 bg-[#8b1a3a] text-[#f2ede8] text-xs tracking-[0.3em] uppercase hover:bg-[#a82148] transition-colors duration-300"
+            className="inline-block px-10 py-4 bg-[#d4006e] text-white text-xs tracking-[0.3em] uppercase hover:bg-[#b8005e] transition-colors duration-300"
           >
             Explore Collection
           </Link>
@@ -49,26 +60,26 @@ export default async function HomePage() {
       </section>
 
       {/* Curated Selections */}
-      <section className="bg-[#020104] py-24">
+      <section className="bg-white py-24">
         <div className="max-w-[1600px] mx-auto px-6 mb-12">
           <div className="flex items-end justify-between">
             <div>
-              <h2 className="font-serif text-4xl text-[#f2ede8] mb-3">Curated Selections</h2>
-              <p className="text-xs text-[#4a4448] max-w-xs leading-relaxed">
+              <h2 className="font-serif text-4xl text-gray-900 mb-3">Curated Selections</h2>
+              <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
                 Our signature pieces blending sophisticated design with unparalleled sensation.
               </p>
             </div>
           </div>
         </div>
-        <div className="max-w-[1600px] mx-auto px-6">
+        <div className="max-w-[1700px] mx-auto px-6">
           <BannerCarousel />
         </div>
       </section>
 
       {/* Quote */}
-      <section className="py-24 px-6 bg-[#07030b]">
+      <section className="py-24 px-6 bg-gray-50">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="font-serif text-3xl md:text-5xl text-[#f2ede8] italic leading-tight">
+          <p className="font-serif text-3xl md:text-5xl text-gray-800 italic leading-tight">
             &ldquo;Beauty and pleasure are not mutually exclusive. They are the foundation of true intimacy.&rdquo;
           </p>
         </div>
@@ -76,14 +87,14 @@ export default async function HomePage() {
 
       {/* New Arrivals */}
       {(newArrivals ?? []).length > 0 && (
-        <section className="bg-[#020104] px-6 py-24">
-          <div className="max-w-[1600px] mx-auto">
+        <section className="bg-white py-24">
+          <div className="max-w-[1600px] px-6 mx-auto">
             <div className="flex items-end justify-between mb-12">
               <div>
-                <p className="text-xs tracking-widest uppercase text-[#c5a028] mb-2">Just Arrived</p>
-                <h2 className="font-serif text-4xl text-[#f2ede8]">New Arrivals</h2>
+                <p className="text-xs tracking-widest uppercase text-[#d4006e] mb-2">Just Arrived</p>
+                <h2 className="font-serif text-4xl text-gray-900">New Arrivals</h2>
               </div>
-              <Link href="/products?filter=new" className="text-xs tracking-widest uppercase text-[#7a7078] hover:text-[#c5a028] transition-colors duration-300">
+              <Link href="/products?new=true" className="text-xs tracking-widest uppercase text-gray-400 hover:text-[#d4006e] transition-colors duration-300">
                 See All
               </Link>
             </div>

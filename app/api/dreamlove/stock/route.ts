@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { getBasicProductInfo } from '@/lib/dreamlove/soap'
+import { getProductStock } from '@/lib/dreamlove/api'
 
 // GET /api/dreamlove/stock?id=<dreamlove_id>
 export async function GET(request: NextRequest) {
@@ -9,13 +9,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const info = await getBasicProductInfo(id)
-    // Never expose rawXml to client
+    const info = await getProductStock(id)
     return NextResponse.json({
-      dreamloveId: info.dreamloveId,
+      dreamloveId: id,
       available: info.available,
       stock: info.stock,
-      price: info.price,
     })
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 })

@@ -50,7 +50,7 @@ export function CartItem({ item }: CartItemProps) {
             onClick={() =>
               startTransition(() => { void updateCartQuantity(item.id, item.quantity - 1) })
             }
-            className="w-7 h-7 border border-[#1e181d] text-[#7a7078] text-sm hover:border-[#c5a028] hover:text-[#c5a028] disabled:opacity-50 transition-colors"
+            className="w-7 h-7 border border-[#1e181d] text-[#7a7078] text-sm hover:border-[#d4006e] hover:text-[#d4006e] disabled:opacity-50 transition-colors"
           >
             −
           </button>
@@ -60,7 +60,7 @@ export function CartItem({ item }: CartItemProps) {
             onClick={() =>
               startTransition(() => { void updateCartQuantity(item.id, item.quantity + 1) })
             }
-            className="w-7 h-7 border border-[#1e181d] text-[#7a7078] text-sm hover:border-[#c5a028] hover:text-[#c5a028] disabled:opacity-50 transition-colors"
+            className="w-7 h-7 border border-[#1e181d] text-[#7a7078] text-sm hover:border-[#d4006e] hover:text-[#d4006e] disabled:opacity-50 transition-colors"
           >
             +
           </button>
@@ -68,7 +68,7 @@ export function CartItem({ item }: CartItemProps) {
       </div>
 
       <div className="text-right shrink-0">
-        <p className="text-sm text-[#c5a028]">{formatPrice(product.retail_price * item.quantity)}</p>
+        <p className="text-sm text-[#d4006e]">{formatPrice(product.retail_price * item.quantity)}</p>
         <button
           disabled={isPending}
           onClick={() => startTransition(() => { void removeFromCart(item.id) })}

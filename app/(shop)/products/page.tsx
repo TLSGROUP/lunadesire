@@ -6,7 +6,7 @@ import Link from 'next/link'
 export const metadata = { title: 'Collection' }
 
 interface Props {
-  searchParams: Promise<{ category?: string; brand?: string; q?: string; page?: string }>
+  searchParams: Promise<{ category?: string; brand?: string; q?: string; page?: string; new?: string }>
 }
 
 interface Category {
@@ -27,7 +27,7 @@ function collectDescendantIds(rootId: string, all: Category[]): string[] {
 }
 
 export default async function ProductsPage({ searchParams }: Props) {
-  const { category, brand, q, page: pageStr } = await searchParams
+  const { category, brand, q, page: pageStr, new: isNew } = await searchParams
   const page = parseInt(pageStr ?? '1', 10)
   const pageSize = 48
   const from = (page - 1) * pageSize
@@ -58,19 +58,25 @@ export default async function ProductsPage({ searchParams }: Props) {
     ? collectDescendantIds(currentCat.id, cats)
     : null
 
+
   // Build products query
   let query = supabase
     .from('products')
-    .select('id, name, slug, retail_price, images, brand, stock_quantity', {
+    .select('id, name, slug, retail_price, images, brand, stock_quantity, is_new, brand_logo', {
       count: 'exact',
     })
     .eq('is_active', true)
     .range(from, from + pageSize - 1)
-    .order('name')
+    .order('stock_quantity', { ascending: false })
 
   if (q) query = query.ilike('name', `%${q}%`)
   if (brand) query = query.eq('brand', brand)
-  if (categoryIds) query = query.in('category_id', categoryIds)
+  if (isNew) query = query.eq('is_new', true)
+  if (isNew && category && currentCat) {
+    query = query.in('category_id', collectDescendantIds(currentCat.id, cats))
+  } else if (categoryIds) {
+    query = query.in('category_id', categoryIds)
+  }
 
   const { data: products, count } = await query
   const totalPages = count ? Math.ceil(count / pageSize) : 1
@@ -86,40 +92,40 @@ export default async function ProductsPage({ searchParams }: Props) {
   }
 
   return (
-    <div className="pt-20 h-screen flex flex-col overflow-hidden bg-[#020104]">
+    <div className="pt-20 h-screen flex flex-col overflow-hidden bg-white">
       {/* Page header */}
-      <div className="border-b border-[#1e181d] py-12 shrink-0">
+      <div className="border-b border-gray-200 py-12 shrink-0">
         <div className="max-w-[1600px] mx-auto px-6">
           {/* Breadcrumb */}
           {breadcrumb.length > 0 ? (
-            <div className="flex items-center gap-2 text-xs tracking-widest uppercase text-[#4a4448] mb-3">
-              <Link href="/products" className="hover:text-[#c5a028] transition-colors">Collection</Link>
+            <div className="flex items-center gap-2 text-xs tracking-widest uppercase text-gray-400 mb-3">
+              <Link href="/products" className="hover:text-[#d4006e] transition-colors">Collection</Link>
               {breadcrumb.map((b) => (
                 <span key={b.id} className="flex items-center gap-2">
                   <span>/</span>
-                  <Link href={`/products?category=${encodeURIComponent(b.slug)}`} className="hover:text-[#c5a028] transition-colors">
+                  <Link href={`/products?category=${encodeURIComponent(b.slug)}`} className="hover:text-[#d4006e] transition-colors">
                     {b.name.split('|').pop()}
                   </Link>
                 </span>
               ))}
             </div>
           ) : (
-            <p className="text-xs tracking-widest uppercase text-[#c5a028] mb-3">The Collection</p>
+            <p className="text-xs tracking-widest uppercase text-[#d4006e] mb-3">The Collection</p>
           )}
 
           <div className="flex items-end justify-between">
-            <h1 className="font-serif text-5xl text-[#f2ede8]">
-              {q ? `"${q}"` : currentCat ? currentCat.name.split('|').pop()! : 'All Products'}
+            <h1 className="font-serif text-5xl text-gray-900">
+              {q ? `"${q}"` : isNew ? 'New Arrivals' : currentCat ? currentCat.name.split('|').pop()! : 'All Products'}
             </h1>
             {count !== null && (
-              <span className="text-xs text-[#4a4448]">{count} items</span>
+              <span className="text-xs text-gray-400">{count} items</span>
             )}
           </div>
         </div>
       </div>
 
       {/* Subcategory filter pills */}
-      {subcategories.length > 0 && (
+      {!isNew && subcategories.length > 0 && (
         <div className="shrink-0">
           <CategoryFilters
             subcategories={subcategories.map((c) => ({
@@ -142,19 +148,19 @@ export default async function ProductsPage({ searchParams }: Props) {
             <div className="flex justify-center gap-3 mt-16">
               {page > 1 && (
                 <Link
-                  href={`/products?page=${page - 1}${category ? `&category=${encodeURIComponent(category)}` : ''}${q ? `&q=${q}` : ''}`}
-                  className="px-6 py-2 border border-[#3a3038] text-xs tracking-widest uppercase text-[#f2ede8] hover:border-[#c5a028] hover:text-[#c5a028] transition-colors duration-300"
+                  href={`/products?page=${page - 1}${isNew ? '&new=true' : ''}${category ? `&category=${encodeURIComponent(category)}` : ''}${q ? `&q=${q}` : ''}`}
+                  className="px-6 py-2 border border-gray-300 text-xs tracking-widest uppercase text-gray-700 hover:border-[#d4006e] hover:text-[#d4006e] transition-colors duration-300"
                 >
                   Previous
                 </Link>
               )}
-              <span className="px-6 py-2 text-xs text-[#7a7078]">
+              <span className="px-6 py-2 text-xs text-gray-400">
                 {page} / {totalPages}
               </span>
               {page < totalPages && (
                 <Link
-                  href={`/products?page=${page + 1}${category ? `&category=${encodeURIComponent(category)}` : ''}${q ? `&q=${q}` : ''}`}
-                  className="px-6 py-2 border border-[#3a3038] text-xs tracking-widest uppercase text-[#f2ede8] hover:border-[#c5a028] hover:text-[#c5a028] transition-colors duration-300"
+                  href={`/products?page=${page + 1}${isNew ? '&new=true' : ''}${category ? `&category=${encodeURIComponent(category)}` : ''}${q ? `&q=${q}` : ''}`}
+                  className="px-6 py-2 border border-gray-300 text-xs tracking-widest uppercase text-gray-700 hover:border-[#d4006e] hover:text-[#d4006e] transition-colors duration-300"
                 >
                   Next
                 </Link>

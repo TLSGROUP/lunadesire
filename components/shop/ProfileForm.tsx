@@ -38,26 +38,26 @@ export function ProfileForm({
         <p className="text-xs tracking-widest uppercase text-emerald-500">Saved successfully.</p>
       )}
       <div>
-        <label className="block text-xs tracking-widest uppercase text-[#7a7078] mb-2">Full Name</label>
+        <label className="block text-xs tracking-widest uppercase text-gray-500 mb-2">Full Name</label>
         <input
           name="full_name"
           defaultValue={defaultValues.full_name}
-          className="w-full bg-[#0d080f] border border-[#1e181d] text-[#f2ede8] px-4 py-3 text-sm focus:outline-none focus:border-[#c5a028] transition-colors"
+          className="w-full bg-white border border-gray-300 text-gray-900 px-4 py-3 text-sm focus:outline-none focus:border-[#d4006e] transition-colors"
         />
       </div>
       <div>
-        <label className="block text-xs tracking-widest uppercase text-[#7a7078] mb-2">Phone</label>
+        <label className="block text-xs tracking-widest uppercase text-gray-500 mb-2">Phone</label>
         <input
           name="phone"
           type="tel"
           defaultValue={defaultValues.phone}
-          className="w-full bg-[#0d080f] border border-[#1e181d] text-[#f2ede8] px-4 py-3 text-sm focus:outline-none focus:border-[#c5a028] transition-colors"
+          className="w-full bg-white border border-gray-300 text-gray-900 px-4 py-3 text-sm focus:outline-none focus:border-[#d4006e] transition-colors"
         />
       </div>
       <button
         type="submit"
         disabled={isPending}
-        className="border border-[#c5a028] text-[#c5a028] px-8 py-3 text-xs tracking-widest uppercase hover:bg-[#c5a028] hover:text-black disabled:opacity-40 transition-colors duration-300"
+        className="border border-[#d4006e] text-[#d4006e] px-8 py-3 text-xs tracking-widest uppercase hover:bg-[#d4006e] hover:text-black disabled:opacity-40 transition-colors duration-300"
       >
         {isPending ? 'Saving…' : 'Save Changes'}
       </button>

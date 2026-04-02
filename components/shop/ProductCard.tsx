@@ -9,6 +9,8 @@ interface Product {
   images: string[] | null
   brand: string | null
   stock_quantity: number
+  is_new?: boolean | null
+  brand_logo?: string | null
 }
 
 interface Props {
@@ -21,62 +23,127 @@ export function ProductCard({ product, compact = false }: Props) {
 
   if (compact) {
     return (
-      <Link href={`/products/${product.slug}`} className="group block">
-        <div className="aspect-square bg-[#0d080f] overflow-hidden mb-3">
+      <Link href={`/products/${product.slug}`} className="group flex flex-col h-full relative border border-gray-200 hover:border-gray-300 hover:shadow-xl transition-all duration-300">
+        {/* NEW ribbon */}
+        {product.is_new && (
+          <div className="absolute top-0 left-0 w-24 h-24 overflow-hidden pointer-events-none z-10">
+            <div className="absolute top-2 -left-8 w-32 py-2 bg-[#d4006e] text-white text-xs font-bold tracking-widest text-center rotate-[-45deg] shadow-lg">
+              NEW
+            </div>
+          </div>
+        )}
+
+        {/* Stock badge */}
+        <div className="flex justify-center">
+          {product.stock_quantity > 0 ? (
+            <span className="px-2 py-0.5 bg-[#2d6a2d] text-white text-[9px] font-semibold tracking-wider uppercase">
+              In Stock ({product.stock_quantity})
+            </span>
+          ) : (
+            <span className="px-2 py-0.5 bg-[#555] text-white text-[9px] font-semibold tracking-wider uppercase">
+              Out of Stock
+            </span>
+          )}
+        </div>
+
+        {/* Brand logo */}
+        <div className="h-10 bg-white flex items-center justify-center px-3">
+          {product.brand_logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={product.brand_logo} alt={product.brand ?? ''} className="max-h-8 max-w-full object-contain" />
+          ) : product.brand ? (
+            <span className="text-[9px] font-bold tracking-widest uppercase text-black truncate">{product.brand}</span>
+          ) : null}
+        </div>
+
+        {/* Image */}
+        <div className="flex-1 bg-white overflow-hidden">
           {image ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={image}
-              alt={product.name}
-              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-            />
+            <img src={image} alt={product.name} className="w-full h-full object-contain" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-[#333]">
+            <div className="w-full h-full flex items-center justify-center text-[#ccc]">
               <span className="text-xs">No image</span>
             </div>
           )}
         </div>
-        <p className="text-xs text-[#7a7078] uppercase tracking-widest truncate mb-1">
-          {product.brand ?? ''}
-        </p>
-        <p className="text-xs text-[#f2ede8] line-clamp-2 leading-snug">{product.name}</p>
-        <p className="text-xs text-[#c5a028] mt-1">{formatPrice(product.retail_price)}</p>
+
+        {/* Info */}
+        <div className="p-2 shrink-0 flex flex-col gap-1">
+          <p className="text-xs text-gray-800 line-clamp-2 leading-snug">{product.name}</p>
+          <div className="flex items-baseline justify-between mt-auto">
+            <p className="text-base font-semibold text-gray-900">{formatPrice(product.retail_price)}</p>
+            <span className="text-[9px] text-gray-400 tracking-wide uppercase">VAT incl.</span>
+          </div>
+        </div>
       </Link>
     )
   }
 
   return (
-    <Link href={`/products/${product.slug}`} className="group block">
-      <div className="aspect-square bg-[#0d080f] overflow-hidden mb-4 relative">
+    <Link href={`/products/${product.slug}`} className="group flex flex-col relative border border-gray-200 hover:border-gray-300 hover:shadow-xl transition-all duration-300">
+      {/* NEW ribbon — top-left corner of the entire card */}
+      {product.is_new && (
+        <div className="absolute top-0 left-0 w-24 h-24 overflow-hidden pointer-events-none z-10">
+          <div className="absolute top-2 -left-8 w-32 py-2 bg-[#d4006e] text-white text-xs font-bold tracking-widest text-center rotate-[-45deg] shadow-lg">
+            NEW
+          </div>
+        </div>
+      )}
+
+      {/* 1. Stock badge — centered */}
+      <div className="flex justify-center mb-1">
+        {product.stock_quantity > 0 ? (
+          <span className="px-3 py-1 bg-[#2d6a2d] text-white text-[10px] font-semibold tracking-wider uppercase">
+            In Stock ({product.stock_quantity})
+          </span>
+        ) : (
+          <span className="px-3 py-1 bg-[#555] text-white text-[10px] font-semibold tracking-wider uppercase">
+            Out of Stock
+          </span>
+        )}
+      </div>
+
+      {/* 2. Brand logo — centered, white zone */}
+      <div className="h-12 bg-white flex items-center justify-center px-4">
+        {product.brand_logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={product.brand_logo}
+            alt={product.brand ?? ''}
+            className="max-h-9 max-w-full object-contain"
+          />
+        ) : product.brand ? (
+          <span className="text-xs font-bold tracking-widest uppercase text-black">
+            {product.brand}
+          </span>
+        ) : null}
+      </div>
+
+      {/* 3. Product image */}
+      <div className="aspect-square bg-white overflow-hidden mb-3">
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={image}
             alt={product.name}
-            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700"
+            className="w-full h-full object-contain"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[#333]">
+          <div className="w-full h-full flex items-center justify-center text-[#ccc]">
             <span className="text-xs">No image</span>
-          </div>
-        )}
-        {product.stock_quantity === 0 && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="text-xs tracking-widest uppercase text-[#7a7078]">Out of stock</span>
           </div>
         )}
       </div>
 
-      <div>
-        {product.brand && (
-          <p className="text-xs tracking-widest uppercase text-[#4a4448] mb-1">
-            {product.brand}
-          </p>
-        )}
-        <p className="text-sm text-[#f2ede8] line-clamp-2 leading-snug mb-2">
+      <div className="flex flex-col flex-1 p-3">
+        <p className="text-sm text-gray-800 line-clamp-2 leading-snug flex-1">
           {product.name}
         </p>
-        <p className="text-sm text-[#c5a028]">{formatPrice(product.retail_price)}</p>
+        <div className="flex items-baseline justify-between mt-2">
+          <p className="text-lg font-semibold text-gray-900">{formatPrice(product.retail_price)}</p>
+          <span className="text-[10px] text-gray-400 tracking-wide uppercase">VAT incl.</span>
+        </div>
       </div>
     </Link>
   )

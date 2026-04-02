@@ -18,7 +18,7 @@ export default async function CheckoutPage() {
     <div className="pt-20 min-h-screen bg-[#020104]">
       <div className="border-b border-[#1e181d] py-12">
         <div className="max-w-5xl mx-auto px-6">
-          <p className="text-xs tracking-widest uppercase text-[#c5a028] mb-3">Checkout</p>
+          <p className="text-xs tracking-widest uppercase text-[#d4006e] mb-3">Checkout</p>
           <h1 className="font-serif text-4xl text-[#f2ede8]">Complete Your Order</h1>
         </div>
       </div>
@@ -49,7 +49,7 @@ export default async function CheckoutPage() {
               </div>
               <div className="border-t border-[#1e181d] pt-4 flex justify-between">
                 <span className="text-sm text-[#7a7078]">Subtotal</span>
-                <span className="text-[#c5a028]">{formatPrice(subtotal)}</span>
+                <span className="text-[#d4006e]">{formatPrice(subtotal)}</span>
               </div>
               <p className="text-xs text-[#4a4448]">+ shipping (calculated next step)</p>
             </div>

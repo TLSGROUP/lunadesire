@@ -8,6 +8,8 @@ interface Product {
   images: string[] | null
   brand: string | null
   stock_quantity: number
+  is_new?: boolean | null
+  brand_logo?: string | null
 }
 
 export function ProductGrid({ products }: { products: Product[] }) {

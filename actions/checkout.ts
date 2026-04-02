@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { getBasicProductInfo } from '@/lib/dreamlove/soap'
+import { getProductStock } from '@/lib/dreamlove/api'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -35,7 +35,7 @@ export async function createOrder(shippingAddress: ShippingAddress) {
     const product = item.product as { dreamlove_id: string; name: string }
     let stockInfo
     try {
-      stockInfo = await getBasicProductInfo(product.dreamlove_id)
+      stockInfo = await getProductStock(product.dreamlove_id)
     } catch {
       return {
         error: `Could not verify stock for "${product.name}". Please try again.`,

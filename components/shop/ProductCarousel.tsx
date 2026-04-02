@@ -12,6 +12,7 @@ interface Product {
   images: string[] | null
   brand: string | null
   stock_quantity: number
+  is_new?: boolean | null
 }
 
 const CARD_WIDTH = 264 // 260px card + 4px gap
@@ -76,10 +77,18 @@ export function ProductCarousel({ products }: { products: Product[] }) {
   }
 
   return (
-    <div className="relative">
+    <div className="flex items-center gap-4">
+      <button
+        onClick={() => scroll('prev')}
+        className="shrink-0 w-10 h-10 border border-gray-300 text-gray-500 hover:border-[#d4006e] hover:text-[#d4006e] flex items-center justify-center transition-colors duration-300"
+        aria-label="Previous"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+
       <div
         ref={trackRef}
-        className="flex gap-4 overflow-x-hidden pb-2"
+        className="flex-1 flex gap-4 overflow-x-hidden pb-2"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         onMouseEnter={() => { isPaused.current = true }}
         onMouseLeave={() => { isPaused.current = false }}
@@ -87,23 +96,15 @@ export function ProductCarousel({ products }: { products: Product[] }) {
         onTouchEnd={() => { setTimeout(() => { isPaused.current = false }, 1500) }}
       >
         {tripled.map((product, i) => (
-          <div key={`${product.id}-${i}`} className="shrink-0 w-[260px]">
+          <div key={`${product.id}-${i}`} className="shrink-0 w-[260px] h-[380px]">
             <ProductCard product={product} compact />
           </div>
         ))}
       </div>
 
       <button
-        onClick={() => scroll('prev')}
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 bg-[#07030b] border border-[#1e181d] text-[#7a7078] hover:border-[#c5a028] hover:text-[#c5a028] flex items-center justify-center transition-colors duration-300 z-10"
-        aria-label="Previous"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </button>
-
-      <button
         onClick={() => scroll('next')}
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 bg-[#07030b] border border-[#1e181d] text-[#7a7078] hover:border-[#c5a028] hover:text-[#c5a028] flex items-center justify-center transition-colors duration-300 z-10"
+        className="shrink-0 w-10 h-10 border border-gray-300 text-gray-500 hover:border-[#d4006e] hover:text-[#d4006e] flex items-center justify-center transition-colors duration-300"
         aria-label="Next"
       >
         <ChevronRight className="h-4 w-4" />
