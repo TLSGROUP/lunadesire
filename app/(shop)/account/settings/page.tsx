@@ -21,6 +21,7 @@ export default async function SettingsPage() {
       <ProfileForm
         defaultValues={{ full_name: profile?.full_name ?? '', phone: profile?.phone ?? '' }}
       />
+
     </div>
   )
 }

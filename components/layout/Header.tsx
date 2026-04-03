@@ -6,6 +6,15 @@ export async function Header() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  let cartCount = 0
+  if (user) {
+    const { data } = await supabase
+      .from('cart_items')
+      .select('quantity')
+      .eq('user_id', user.id)
+    cartCount = (data ?? []).reduce((sum, item) => sum + (item.quantity ?? 1), 0)
+  }
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-md border-b border-white/5">
       <div className="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between">
@@ -41,8 +50,13 @@ export async function Header() {
         </nav>
 
         <div className="flex items-center gap-5">
-          <Link href="/cart" className="text-[#f2ede8] hover:text-[#d4006e] transition-colors duration-300">
+          <Link href="/cart" className="relative text-[#f2ede8] hover:text-[#d4006e] transition-colors duration-300">
             <ShoppingCart className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 w-4 h-4 bg-[#d4006e] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
           </Link>
           {user ? (
             <Link href="/account" className="text-[#f2ede8] hover:text-[#d4006e] transition-colors duration-300">

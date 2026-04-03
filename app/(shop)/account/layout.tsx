@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { signOut } from '@/actions/auth'
 
 export default async function AccountLayout({
   children,
@@ -44,6 +45,14 @@ export default async function AccountLayout({
             >
               Settings
             </Link>
+            <form action={signOut}>
+              <button
+                type="submit"
+                className="block w-full text-left px-0 py-2.5 text-xs tracking-widest uppercase text-gray-500 border-b border-gray-200 hover:text-[#d4006e] transition-colors"
+              >
+                Sign Out
+              </button>
+            </form>
           </nav>
           <div className="md:col-span-3">{children}</div>
         </div>

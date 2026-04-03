@@ -36,29 +36,29 @@ export function LoginForm() {
         <p className="border border-[#8b1a3a] text-[#e07070] text-xs p-3 tracking-wide">{error}</p>
       )}
       <div>
-        <label className="block text-xs tracking-widest uppercase text-[#7a7078] mb-2">Email</label>
+        <label className="block text-xs tracking-widest uppercase text-gray-500 mb-2">Email</label>
         <input
           name="email"
           type="email"
           required
           autoComplete="email"
-          className="w-full bg-[#0d080f] border border-[#1e181d] text-[#f2ede8] px-4 py-3 text-sm focus:outline-none focus:border-[#d4006e] transition-colors"
+          className="w-full bg-white border border-gray-300 text-gray-900 px-4 py-3 text-sm focus:outline-none focus:border-[#d4006e] transition-colors"
         />
       </div>
       <div>
-        <label className="block text-xs tracking-widest uppercase text-[#7a7078] mb-2">Password</label>
+        <label className="block text-xs tracking-widest uppercase text-gray-500 mb-2">Password</label>
         <input
           name="password"
           type="password"
           required
           autoComplete="current-password"
-          className="w-full bg-[#0d080f] border border-[#1e181d] text-[#f2ede8] px-4 py-3 text-sm focus:outline-none focus:border-[#d4006e] transition-colors"
+          className="w-full bg-white border border-gray-300 text-gray-900 px-4 py-3 text-sm focus:outline-none focus:border-[#d4006e] transition-colors"
         />
       </div>
       <button
         type="submit"
         disabled={isPending}
-        className="w-full bg-[#8b1a3a] text-white py-4 text-xs tracking-widest uppercase hover:bg-[#a82148] disabled:opacity-40 transition-colors duration-300 mt-2"
+        className="w-full bg-[#d4006e] text-white py-4 text-xs tracking-widest uppercase hover:bg-[#b8005e] disabled:opacity-40 transition-colors duration-300 mt-2"
       >
         {isPending ? 'Signing in…' : 'Sign In'}
       </button>

@@ -15,10 +15,10 @@ export default async function CartPage() {
           <p className="text-xs tracking-widest uppercase text-[#4a4448] mb-6">Your Cart</p>
           <h1 className="font-serif text-3xl text-[#d4006e] mb-8">Your cart is empty</h1>
           <Link
-            href="/products"
-            className="inline-block border border-[#d4006e] text-[#d4006e] px-8 py-3 text-xs tracking-widest uppercase hover:bg-[#d4006e] hover:text-black transition-colors duration-300"
+            href="/"
+            className="inline-block border border-[#d4006e] text-[#d4006e] px-8 py-3 text-xs tracking-widest uppercase hover:bg-[#d4006e] hover:text-white transition-colors duration-300"
           >
-            Browse Collection
+            Back Home
           </Link>
         </div>
       </div>

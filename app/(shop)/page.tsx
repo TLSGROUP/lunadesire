@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ProductCarousel } from '@/components/shop/ProductCarousel'
 import { BannerCarousel } from '@/components/shop/BannerCarousel'
+import { Footer } from '@/components/layout/Footer'
 
 export const metadata = { title: 'Home' }
 
@@ -45,17 +46,11 @@ export default async function HomePage() {
           </p>
           <h1 className="font-serif text-6xl md:text-8xl text-[#f2ede8] leading-tight mb-6">
             Elevate Your<br />
-            <em className="italic text-[#f2ede8]">Desires</em>
+            <em className="italic text-[#d4006e]">Desires</em>
           </h1>
           <p className="text-sm text-[#7a7078] leading-relaxed mb-10 max-w-md mx-auto">
             Curated luxury wellness products designed for profound connection and aesthetic pleasure.
           </p>
-          <Link
-            href="/products"
-            className="inline-block px-10 py-4 bg-[#d4006e] text-white text-xs tracking-[0.3em] uppercase hover:bg-[#b8005e] transition-colors duration-300"
-          >
-            Explore Collection
-          </Link>
         </div>
       </section>
 
@@ -102,6 +97,7 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+      <Footer />
     </>
   )
 }

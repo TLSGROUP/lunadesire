@@ -1,12 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
-import { ProductGrid } from '@/components/shop/ProductGrid'
+import { InfiniteProductGrid } from '@/components/shop/InfiniteProductGrid'
 import { CategoryFilters } from '@/components/shop/CategoryFilters'
+import { Footer } from '@/components/layout/Footer'
 import Link from 'next/link'
 
 export const metadata = { title: 'Collection' }
 
 interface Props {
-  searchParams: Promise<{ category?: string; brand?: string; q?: string; page?: string; new?: string }>
+  searchParams: Promise<{ category?: string; brand?: string; q?: string; new?: string }>
 }
 
 interface Category {
@@ -16,7 +17,6 @@ interface Category {
   parent_id: string | null
 }
 
-// Collect all descendant IDs recursively (including the root itself)
 function collectDescendantIds(rootId: string, all: Category[]): string[] {
   const ids: string[] = [rootId]
   const children = all.filter((c) => c.parent_id === rootId)
@@ -27,14 +27,11 @@ function collectDescendantIds(rootId: string, all: Category[]): string[] {
 }
 
 export default async function ProductsPage({ searchParams }: Props) {
-  const { category, brand, q, page: pageStr, new: isNew } = await searchParams
-  const page = parseInt(pageStr ?? '1', 10)
+  const { category, brand, q, new: isNew } = await searchParams
   const pageSize = 48
-  const from = (page - 1) * pageSize
 
   const supabase = await createClient()
 
-  // Load all categories once
   const { data: allCategories } = await supabase
     .from('categories')
     .select('id, name, slug, parent_id')
@@ -42,31 +39,25 @@ export default async function ProductsPage({ searchParams }: Props) {
 
   const cats = (allCategories ?? []) as Category[]
 
-  // Resolve current category
   let currentCat: Category | null = null
   if (category) {
     currentCat = cats.find((c) => c.slug === category) ?? null
   }
 
-  // Subcategories to show as filter pills (direct children only)
   const subcategories = currentCat
     ? cats.filter((c) => c.parent_id === currentCat!.id)
     : cats.filter((c) => c.parent_id === null)
 
-  // All descendant IDs for filtering
   const categoryIds = currentCat
     ? collectDescendantIds(currentCat.id, cats)
     : null
 
-
-  // Build products query
+  // Initial page of products (SSR)
   let query = supabase
     .from('products')
-    .select('id, name, slug, retail_price, images, brand, stock_quantity, is_new, brand_logo', {
-      count: 'exact',
-    })
+    .select('id, name, slug, retail_price, images, brand, stock_quantity, is_new, brand_logo', { count: 'exact' })
     .eq('is_active', true)
-    .range(from, from + pageSize - 1)
+    .range(0, pageSize - 1)
     .order('stock_quantity', { ascending: false })
 
   if (q) query = query.ilike('name', `%${q}%`)
@@ -79,9 +70,8 @@ export default async function ProductsPage({ searchParams }: Props) {
   }
 
   const { data: products, count } = await query
-  const totalPages = count ? Math.ceil(count / pageSize) : 1
 
-  // Breadcrumb: walk up from current category to root
+  // Breadcrumb
   const breadcrumb: Category[] = []
   if (currentCat) {
     let c: Category | undefined = currentCat
@@ -91,15 +81,16 @@ export default async function ProductsPage({ searchParams }: Props) {
     }
   }
 
+  const initialHasMore = (count ?? 0) > pageSize
+
   return (
     <div className="pt-20 h-screen flex flex-col overflow-hidden bg-white">
       {/* Page header */}
-      <div className="border-b border-gray-200 py-12 shrink-0">
+      <div className="border-b border-gray-200 py-6 shrink-0">
         <div className="max-w-[1600px] mx-auto px-6">
-          {/* Breadcrumb */}
           {breadcrumb.length > 0 ? (
-            <div className="flex items-center gap-2 text-xs tracking-widest uppercase text-gray-400 mb-3">
-              <Link href="/products" className="hover:text-[#d4006e] transition-colors">Collection</Link>
+            <div className="flex items-center gap-2 text-xs tracking-widest uppercase text-gray-400 mb-2">
+              <Link href="/" className="hover:text-[#d4006e] transition-colors">Home</Link>
               {breadcrumb.map((b) => (
                 <span key={b.id} className="flex items-center gap-2">
                   <span>/</span>
@@ -110,11 +101,11 @@ export default async function ProductsPage({ searchParams }: Props) {
               ))}
             </div>
           ) : (
-            <p className="text-xs tracking-widest uppercase text-[#d4006e] mb-3">The Collection</p>
+            <p className="text-xs tracking-widest uppercase text-[#d4006e] mb-2">The Collection</p>
           )}
 
           <div className="flex items-end justify-between">
-            <h1 className="font-serif text-5xl text-gray-900">
+            <h1 className="font-serif text-3xl text-gray-900">
               {q ? `"${q}"` : isNew ? 'New Arrivals' : currentCat ? currentCat.name.split('|').pop()! : 'All Products'}
             </h1>
             {count !== null && (
@@ -138,36 +129,16 @@ export default async function ProductsPage({ searchParams }: Props) {
         </div>
       )}
 
-      {/* Scrollable products area */}
+      {/* Scrollable products area with infinite scroll */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-[1600px] mx-auto px-6 py-12">
-          <ProductGrid products={products ?? []} />
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-center gap-3 mt-16">
-              {page > 1 && (
-                <Link
-                  href={`/products?page=${page - 1}${isNew ? '&new=true' : ''}${category ? `&category=${encodeURIComponent(category)}` : ''}${q ? `&q=${q}` : ''}`}
-                  className="px-6 py-2 border border-gray-300 text-xs tracking-widest uppercase text-gray-700 hover:border-[#d4006e] hover:text-[#d4006e] transition-colors duration-300"
-                >
-                  Previous
-                </Link>
-              )}
-              <span className="px-6 py-2 text-xs text-gray-400">
-                {page} / {totalPages}
-              </span>
-              {page < totalPages && (
-                <Link
-                  href={`/products?page=${page + 1}${isNew ? '&new=true' : ''}${category ? `&category=${encodeURIComponent(category)}` : ''}${q ? `&q=${q}` : ''}`}
-                  className="px-6 py-2 border border-gray-300 text-xs tracking-widest uppercase text-gray-700 hover:border-[#d4006e] hover:text-[#d4006e] transition-colors duration-300"
-                >
-                  Next
-                </Link>
-              )}
-            </div>
-          )}
+          <InfiniteProductGrid
+            initialProducts={products ?? []}
+            initialHasMore={initialHasMore}
+            searchParams={{ category, brand, q, new: isNew }}
+          />
         </div>
+        <Footer />
       </div>
     </div>
   )

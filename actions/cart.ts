@@ -26,6 +26,7 @@ export async function addToCart(
 
   if (error) return { error: error.message }
   revalidatePath('/cart')
+  revalidatePath('/', 'layout')
   return { success: true }
 }
 
@@ -64,6 +65,7 @@ export async function removeFromCart(cartItemId: string) {
 
   if (error) return { error: error.message }
   revalidatePath('/cart')
+  revalidatePath('/', 'layout')
   return { success: true }
 }
 

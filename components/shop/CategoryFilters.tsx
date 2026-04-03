@@ -15,7 +15,7 @@ export function CategoryFilters({ subcategories, currentSlug, containerSlug, new
   return (
     <div className="border-b border-gray-200">
       <div className="max-w-[1600px] mx-auto px-6">
-        <div className="flex flex-wrap gap-2 py-4">
+        <div className="flex flex-wrap gap-2 py-3">
           {/* "All" pill */}
           <Link
             href={allHref}

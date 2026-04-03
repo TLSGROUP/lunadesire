@@ -82,13 +82,32 @@ export interface ApiProduct {
   height: string | null
   length: string | null
   requiresRefrigeration: boolean | null
-  brand: { id: number; name: string } | null
+  brand: { id: number; name: string } | string | null
   mainCategory: ApiCategory | string | null
   categories: Array<ApiCategory | string>
   images: ApiImage[]
   barcodes: Array<{ id: number; barcode: string; type: string | null }> | null
   externalId: string | null
   vatGroup: { vatRates: Array<{ vatRate: { rate: string } }> } | null
+  variant?: {
+    id: number
+    option: { id: number; name: string; code: string } | null
+    size: { id: number; name: string; code: string } | null
+  } | null
+}
+
+export interface ApiProductOption {
+  id: number
+  name: string
+  code: string | null
+  optionGroup: string  // IRI e.g. "/product_option_groups/1"
+}
+
+export interface ApiProductSize {
+  id: number
+  name: string
+  code: string | null
+  sizeGroup: string   // IRI e.g. "/product_size_groups/1"
 }
 
 export interface ApiCategory {
@@ -282,6 +301,52 @@ export async function getAvailableStocks(params: {
   return apiFetch<ApiStocksResponse>(`/available_stocks?${q}`, {
     headers: { 'Accept': 'application/ld+json' },
   })
+}
+
+// ---- Product Options (colors) ----------------------------------
+
+// Returns Map<optionGroupIri, options[]>
+export async function getProductOptionsByGroup(): Promise<Map<string, ApiProductOption[]>> {
+  const result = new Map<string, ApiProductOption[]>()
+  let page = 1
+  while (true) {
+    const q = new URLSearchParams({ page: String(page), itemsPerPage: '200' })
+    const res = await apiFetch<{
+      'hydra:member': ApiProductOption[]
+      'hydra:view'?: { 'hydra:next'?: string }
+    }>(`/product_options?${q}`, { headers: { 'Accept': 'application/ld+json' } })
+    for (const opt of res['hydra:member']) {
+      if (!opt.optionGroup) continue
+      if (!result.has(opt.optionGroup)) result.set(opt.optionGroup, [])
+      result.get(opt.optionGroup)!.push(opt)
+    }
+    if (!res['hydra:view']?.['hydra:next']) break
+    page++
+  }
+  return result
+}
+
+// ---- Product Sizes ---------------------------------------------
+
+// Returns Map<sizeGroupIri, sizes[]>
+export async function getProductSizesByGroup(): Promise<Map<string, ApiProductSize[]>> {
+  const result = new Map<string, ApiProductSize[]>()
+  let page = 1
+  while (true) {
+    const q = new URLSearchParams({ page: String(page), itemsPerPage: '200' })
+    const res = await apiFetch<{
+      'hydra:member': ApiProductSize[]
+      'hydra:view'?: { 'hydra:next'?: string }
+    }>(`/product_sizes?${q}`, { headers: { 'Accept': 'application/ld+json' } })
+    for (const sz of res['hydra:member']) {
+      if (!sz.sizeGroup) continue
+      if (!result.has(sz.sizeGroup)) result.set(sz.sizeGroup, [])
+      result.get(sz.sizeGroup)!.push(sz)
+    }
+    if (!res['hydra:view']?.['hydra:next']) break
+    page++
+  }
+  return result
 }
 
 // ---- Orders ----------------------------------------------------

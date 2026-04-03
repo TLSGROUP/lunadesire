@@ -22,8 +22,8 @@ export function CartItem({ item }: CartItemProps) {
   }
 
   return (
-    <div className="flex gap-4 items-start border border-[#1e181d] p-4">
-      <div className="w-20 h-20 bg-[#0d080f] shrink-0">
+    <div className="flex gap-4 items-start border border-gray-200 p-4">
+      <div className="w-20 h-20 bg-gray-50 shrink-0 border border-gray-100">
         {product.images?.[0] ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -33,14 +33,14 @@ export function CartItem({ item }: CartItemProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-xs text-[#333]">No image</span>
+            <span className="text-xs text-gray-300">No image</span>
           </div>
         )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-[#f2ede8] leading-snug mb-1">{product.name}</p>
-        <p className="text-xs text-[#7a7078]">
+        <p className="text-sm font-medium text-gray-900 leading-snug mb-1">{product.name}</p>
+        <p className="text-xs text-gray-500">
           {formatPrice(product.retail_price)} / шт.
         </p>
 
@@ -50,17 +50,17 @@ export function CartItem({ item }: CartItemProps) {
             onClick={() =>
               startTransition(() => { void updateCartQuantity(item.id, item.quantity - 1) })
             }
-            className="w-7 h-7 border border-[#1e181d] text-[#7a7078] text-sm hover:border-[#d4006e] hover:text-[#d4006e] disabled:opacity-50 transition-colors"
+            className="w-7 h-7 border border-gray-300 text-gray-500 text-sm hover:border-[#d4006e] hover:text-[#d4006e] disabled:opacity-50 transition-colors"
           >
             −
           </button>
-          <span className="text-sm text-[#f2ede8] w-5 text-center">{item.quantity}</span>
+          <span className="text-sm text-gray-900 w-5 text-center">{item.quantity}</span>
           <button
             disabled={isPending}
             onClick={() =>
               startTransition(() => { void updateCartQuantity(item.id, item.quantity + 1) })
             }
-            className="w-7 h-7 border border-[#1e181d] text-[#7a7078] text-sm hover:border-[#d4006e] hover:text-[#d4006e] disabled:opacity-50 transition-colors"
+            className="w-7 h-7 border border-gray-300 text-gray-500 text-sm hover:border-[#d4006e] hover:text-[#d4006e] disabled:opacity-50 transition-colors"
           >
             +
           </button>
@@ -68,11 +68,11 @@ export function CartItem({ item }: CartItemProps) {
       </div>
 
       <div className="text-right shrink-0">
-        <p className="text-sm text-[#d4006e]">{formatPrice(product.retail_price * item.quantity)}</p>
+        <p className="text-sm font-semibold text-gray-900">{formatPrice(product.retail_price * item.quantity)}</p>
         <button
           disabled={isPending}
           onClick={() => startTransition(() => { void removeFromCart(item.id) })}
-          className="text-[#4a4448] hover:text-[#8b1a3a] mt-3 disabled:opacity-50 transition-colors"
+          className="text-gray-400 hover:text-[#d4006e] mt-3 disabled:opacity-50 transition-colors"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>

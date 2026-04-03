@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #07030b;
+  --color-background: #ffffff;
   --color-bg-base: #07030b;
   --color-bg-card: #0d080f;
   --color-bg-footer: #050207;
@@ -31,12 +31,11 @@ html {
 }
 
 body {
-  background-color: #07030b;
-  color: #f2ede8;
+  background-color: #ffffff;
+  color: #111111;
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color-scheme: dark;
 }
 
 /* ── Glassmorphism ─────────────────────────────────────────── */

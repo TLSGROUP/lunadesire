@@ -223,6 +223,22 @@ export async function runFullSync(
       const categoryPath = cat ? buildCategoryPath(cat, enCatNames) : undefined
       const categoryId = categoryPath ? categoryDbMap.get(categoryPath.toLowerCase()) ?? null : null
 
+      // Resolve variant color/size from p.variant (each color/size is a separate product)
+      const variantColor = p.variant?.option?.name ?? null
+      const variantColorCode = p.variant?.option?.code ?? null
+      const variantSize = p.variant?.size?.name ?? null
+      const variantSizeCode = p.variant?.size?.code ?? null
+
+      // Build group key: strip variant suffix from name to group siblings together
+      // e.g. "LEG AVENUE - BODY ESCOTE ABIERTO VIOLETA" → "leg-avenue-body-escote-abierto"
+      let productGroupKey: string | null = null
+      if (variantColor || variantSize) {
+        let baseName = p.description ?? p.name ?? ''
+        if (variantColor) baseName = baseName.replace(new RegExp('\\s*' + variantColor + '\\s*', 'i'), ' ')
+        if (variantSize) baseName = baseName.replace(new RegExp('\\s*' + variantSize + '\\s*', 'i'), ' ')
+        productGroupKey = slugify(baseName.trim())
+      }
+
       // Resolve brand — API may return either {id, name} object or IRI string "/brands/634"
       let brandName: string | null = null
       let brandLogo: string | null = null
@@ -261,14 +277,19 @@ export async function runFullSync(
           stock_quantity: stock,
           images,
           attributes: {},
-          weight_grams: p.weight ? parseFloat(p.weight) * 1000 : null,
+          variant_color: variantColor,
+          variant_color_code: variantColorCode,
+          variant_size: variantSize,
+          variant_size_code: variantSizeCode,
+          product_group_key: productGroupKey,
+          weight_grams: p.weight ? Math.round(parseFloat(p.weight) * 1000) : null,
           is_active: p.active && stock > 0,
           is_new: p.new ?? false,
           is_sale: p.reducedPrice ?? false,
           is_refrigerated: p.requiresRefrigeration ?? false,
-          width_mm: p.width ? parseFloat(p.width) : null,
-          height_mm: p.height ? parseFloat(p.height) : null,
-          depth_mm: p.length ? parseFloat(p.length) : null,
+          width_mm: p.width ? Math.round(parseFloat(p.width)) : null,
+          height_mm: p.height ? Math.round(parseFloat(p.height)) : null,
+          depth_mm: p.length ? Math.round(parseFloat(p.length)) : null,
           vat_pct: vatPct ?? null,
           public_id: p.sku ?? null,
           updated_at_supplier: p.updatedAt,
