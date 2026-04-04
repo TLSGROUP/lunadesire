@@ -6,12 +6,12 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import { calculateRetailPrice, charmPrice } from '@/lib/pricing'
 import { slugify } from '@/lib/utils'
-import { getProducts, getAvailableStocks, getAllProductCategories, getEnglishCategoryNames, getBrandMaps } from './api'
+import { getProducts, getAvailableStocks, getAllProductCategories, getEnglishCategoryNames, getBrandMaps, fetchTranslationPage, DREAMLOVE_LANG_MAP } from './api'
 import type { ApiProduct, ApiProductCategory } from './api'
 import type { SyncResult } from './types'
 
 const DEFAULT_MARKUP = parseFloat(process.env.DEFAULT_MARKUP_PCT ?? '40')
-const PAGE_SIZE = 100
+const PAGE_SIZE = 500
 
 export interface SyncProgressEvent {
   stage: string
@@ -83,26 +83,38 @@ export async function runFullSync(
   const result: SyncResult = { synced: 0, updated: 0, deactivated: 0, errors: [] }
   const supabase = await createServiceClient()
 
-  // 1. Fetch all products from REST API (paginated)
+  // 1. Fetch all products from REST API — first page to get total, then parallel
   emit({ stage: 'catalog', message: 'Fetching products from REST API...' })
 
   const allProducts: ApiProduct[] = []
-  let page = 1
-  let totalItems = 0
 
   try {
-    while (true) {
-      const res = await getProducts({ page, pageSize: PAGE_SIZE })
-      if (page === 1) {
-        totalItems = res['hydra:totalItems']
-        emit({ stage: 'catalog', message: `Total products: ${totalItems}`, total: totalItems })
+    const first = await getProducts({ page: 1, pageSize: PAGE_SIZE })
+    const totalItems: number = first['hydra:totalItems']
+    const firstPage = first['hydra:member'] ?? []
+    allProducts.push(...firstPage)
+    emit({ stage: 'catalog', message: `Total products: ${totalItems}`, total: totalItems, synced: allProducts.length })
+
+    // Use actual returned page size (API may cap lower than PAGE_SIZE)
+    const actualPageSize = firstPage.length || PAGE_SIZE
+    const totalPages = Math.ceil(totalItems / actualPageSize)
+
+    if (totalPages > 1) {
+      const CONCURRENCY = 5
+      for (let start = 2; start <= totalPages; start += CONCURRENCY) {
+        const pageNums = Array.from(
+          { length: Math.min(CONCURRENCY, totalPages - start + 1) },
+          (_, i) => start + i
+        )
+        const results = await Promise.allSettled(
+          pageNums.map((p) => getProducts({ page: p, pageSize: PAGE_SIZE }))
+        )
+        for (const r of results) {
+          if (r.status === 'fulfilled') allProducts.push(...(r.value['hydra:member'] ?? []))
+          else result.errors.push(`catalog page fetch: ${r.reason}`)
+        }
+        emit({ stage: 'catalog', message: `Fetched ${allProducts.length} / ${totalItems}`, synced: allProducts.length, total: totalItems })
       }
-      const members = res['hydra:member']
-      if (!members || members.length === 0) break
-      allProducts.push(...members)
-      emit({ stage: 'catalog', message: `Fetched ${allProducts.length} / ${totalItems}`, synced: allProducts.length, total: totalItems })
-      if (!res['hydra:view']?.['hydra:next']) break
-      page++
     }
   } catch (err) {
     result.errors.push(`catalog fetch: ${String(err)}`)
@@ -370,6 +382,127 @@ export async function runFullSync(
     }
   }
   emit({ stage: 'catalog', message: `Brand logos updated for ${[...brandToDlIds.values()].flat().length} products` })
+
+  // 5d. Fetch and upsert product translations — language by language, page by page
+  emit({ stage: 'translations', message: 'Loading product ID map...' })
+  const { data: dbProducts } = await supabase.from('products').select('id, dreamlove_id')
+  const dlToUuid = new Map<string, string>(
+    (dbProducts ?? []).map((p: { id: string; dreamlove_id: string }) => [p.dreamlove_id, p.id])
+  )
+
+  const langEntries = Object.entries(DREAMLOVE_LANG_MAP)
+  let totalTransSaved = 0
+
+  // Helper: fetch all translation pages for one language with parallel page fetching
+  async function fetchLangTranslations(langId: string, locale: string) {
+    const byProduct = new Map<string, { name: string | null; description: string | null; long_description: string | null }>()
+
+    function mergeRecords(records: { field: string; value: string | null; product: string }[]) {
+      for (const t of records) {
+        if (!['name', 'description', 'longDescription'].includes(t.field)) continue
+        if (!t.value) continue
+        const dlId = String(t.product).match(/\/(\d+)$/)?.[1]
+        if (!dlId) continue
+        const uuid = dlToUuid.get(dlId)
+        if (!uuid) continue
+        if (!byProduct.has(uuid)) byProduct.set(uuid, { name: null, description: null, long_description: null })
+        const entry = byProduct.get(uuid)!
+        if (t.field === 'name') entry.name = t.value
+        else if (t.field === 'description') entry.description = t.value
+        else if (t.field === 'longDescription') entry.long_description = t.value
+      }
+    }
+
+    // Fetch first page to get total and actual page size
+    const first = await fetchTranslationPage(langId, 1)
+    mergeRecords(first.records)
+    const actualPageSize = first.records.length || 30
+    const totalItems = first.totalItems ?? 0
+    const totalPages = totalItems > 0 ? Math.ceil(totalItems / actualPageSize) : (first.hasNext ? 9999 : 1)
+
+    emit({ stage: 'translations', message: `[${locale.toUpperCase()}] ${totalItems} records, ~${totalPages} pages` })
+
+    if (totalPages > 1) {
+      const TRANS_CONCURRENCY = 10
+      for (let start = 2; start <= totalPages; start += TRANS_CONCURRENCY) {
+        const pageNums = Array.from(
+          { length: Math.min(TRANS_CONCURRENCY, totalPages - start + 1) },
+          (_, i) => start + i
+        )
+        const results = await Promise.allSettled(
+          pageNums.map((p) => fetchTranslationPage(langId, p))
+        )
+        for (const r of results) {
+          if (r.status === 'fulfilled') mergeRecords(r.value.records)
+          else result.errors.push(`translations [${locale}] page: ${r.reason}`)
+        }
+        const fetched = Math.min(start + TRANS_CONCURRENCY - 2, totalPages)
+        if (fetched % 50 === 0 || fetched === totalPages) {
+          emit({ stage: 'translations', message: `[${locale.toUpperCase()}] fetched ${fetched}/${totalPages} pages` })
+        }
+      }
+    }
+
+    // Batch upsert all accumulated records
+    const rows = [...byProduct.entries()].map(([product_id, fields]) => ({ product_id, locale, ...fields }))
+    emit({ stage: 'translations', message: `[${locale.toUpperCase()}] saving ${rows.length} translations…` })
+
+    const TRANS_BATCH = 1000
+    for (let i = 0; i < rows.length; i += TRANS_BATCH) {
+      const { error } = await supabase
+        .from('product_translations')
+        .upsert(rows.slice(i, i + TRANS_BATCH), { onConflict: 'product_id,locale' })
+      if (error) result.errors.push(`translations [${locale}] batch ${i}: ${error.message}`)
+    }
+
+    return rows.length
+  }
+
+  // Fetch all 8 languages in parallel (2 at a time to avoid API rate limits)
+  const LANG_CONCURRENCY = 2
+  for (let i = 0; i < langEntries.length; i += LANG_CONCURRENCY) {
+    const batch = langEntries.slice(i, i + LANG_CONCURRENCY)
+    const results = await Promise.allSettled(
+      batch.map(([langId, locale]) => fetchLangTranslations(langId, locale))
+    )
+    for (let j = 0; j < results.length; j++) {
+      const r = results[j]
+      const locale = batch[j][1]
+      if (r.status === 'fulfilled') {
+        totalTransSaved += r.value
+        emit({ stage: 'translations', message: `[${locale.toUpperCase()}] done — ${r.value} saved`, synced: totalTransSaved })
+      } else {
+        result.errors.push(`translations [${locale}]: ${r.reason}`)
+        emit({ stage: 'translations', message: `[${locale.toUpperCase()}] error: ${r.reason}` })
+      }
+    }
+  }
+
+  // 5e. Populate Spanish translations from base product fields (DreamLove is natively Spanish)
+  emit({ stage: 'translations', message: '[ES] Generating from base product data…' })
+  const esRows: { product_id: string; locale: string; name: string | null; description: string | null; long_description: string | null }[] = []
+  for (const p of allProducts) {
+    const uuid = dlToUuid.get(String(p.id))
+    if (!uuid) continue
+    esRows.push({
+      product_id: uuid,
+      locale: 'es',
+      name: p.description ?? p.name ?? null,
+      description: p.longDescription ?? p.description ?? null,
+      long_description: p.longDescription ?? null,
+    })
+  }
+  const ES_BATCH = 1000
+  for (let i = 0; i < esRows.length; i += ES_BATCH) {
+    const { error } = await supabase
+      .from('product_translations')
+      .upsert(esRows.slice(i, i + ES_BATCH), { onConflict: 'product_id,locale' })
+    if (error) result.errors.push(`translations [es] base: ${error.message}`)
+  }
+  totalTransSaved += esRows.length
+  emit({ stage: 'translations', message: `[ES] done — ${esRows.length} from base data`, synced: totalTransSaved })
+
+  emit({ stage: 'translations', message: `Translations done — ${totalTransSaved} records saved`, synced: totalTransSaved })
 
   // 6. Deactivate products no longer in feed
   emit({ stage: 'deactivate', message: 'Checking for removed products...' })

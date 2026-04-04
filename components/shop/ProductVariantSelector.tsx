@@ -15,9 +15,10 @@ interface Props {
   productId: string
   siblings: Sibling[]
   currentSlug: string
+  locale?: string
 }
 
-export function ProductVariantSelector({ productId, siblings, currentSlug }: Props) {
+export function ProductVariantSelector({ productId, siblings, currentSlug, locale = 'en' }: Props) {
   const router = useRouter()
   const [qty, setQty] = useState(1)
   const [isPending, startTransition] = useTransition()
@@ -46,7 +47,7 @@ export function ProductVariantSelector({ productId, siblings, currentSlug }: Pro
         (sizes.length === 0 || s.variant_size === size)
     )
     if (match && match.slug !== currentSlug) {
-      router.push(`/products/${match.slug}`)
+      router.push(`/${locale}/products/${match.slug}`)
     }
   }
 

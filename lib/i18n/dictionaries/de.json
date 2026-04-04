@@ -1,0 +1,70 @@
+{
+  "home": {
+    "heroTag": "Die Kunst der Intimität",
+    "heroTitle1": "Erhebe Deine",
+    "heroTitle2": "Wünsche",
+    "heroSubtitle": "Kuratierte Luxus-Wellnessprodukte für tiefe Verbindung und ästhetischen Genuss.",
+    "curatedTitle": "Exklusive Auswahl",
+    "curatedSubtitle": "Unsere Signature-Stücke vereinen anspruchsvolles Design mit unvergleichlichem Empfinden.",
+    "quote": "Schönheit und Vergnügen schließen sich nicht gegenseitig aus. Sie sind das Fundament wahrer Intimität.",
+    "justArrived": "Neu Eingetroffen",
+    "newArrivals": "Neuheiten",
+    "seeAll": "Alle Anzeigen"
+  },
+  "products": {
+    "theCollection": "Die Kollektion",
+    "allProducts": "Alle Produkte",
+    "newArrivals": "Neuheiten",
+    "items": "Artikel",
+    "noProducts": "Keine Produkte gefunden.",
+    "inStock": "Auf Lager",
+    "outOfStock": "Nicht Verfügbar",
+    "vatIncl": "inkl. MwSt."
+  },
+  "product": {
+    "home": "Startseite",
+    "specifications": "Spezifikationen",
+    "weight": "Gewicht",
+    "packageSize": "Paketgröße",
+    "addToCart": "In den Warenkorb",
+    "inStock": "Auf Lager",
+    "outOfStock": "Nicht verfügbar"
+  },
+  "cart": {
+    "title": "Warenkorb",
+    "empty": "Dein Warenkorb ist leer",
+    "continueShopping": "Weiter Einkaufen",
+    "checkout": "Zur Kasse",
+    "total": "Gesamt",
+    "remove": "Entfernen"
+  },
+  "auth": {
+    "signIn": "Anmelden",
+    "signUp": "Registrieren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "forgotPassword": "Passwort vergessen?",
+    "noAccount": "Noch kein Konto?",
+    "hasAccount": "Bereits ein Konto?",
+    "resetPassword": "Passwort Zurücksetzen",
+    "resetSent": "Prüfe deine E-Mail für den Link zum Zurücksetzen."
+  },
+  "nav": {
+    "new": "Neu",
+    "lovetoys": "Lovetoys",
+    "lingerie": "Dessous",
+    "smBondage": "SM & Bondage",
+    "drugstore": "Drogerie",
+    "condoms": "Kondome",
+    "games": "Spiele",
+    "assorted": "Verschiedenes",
+    "signIn": "Anmelden"
+  },
+  "footer": {
+    "about": "Über Uns",
+    "contact": "Kontakt",
+    "privacy": "Datenschutz",
+    "terms": "AGB",
+    "rights": "Alle Rechte vorbehalten."
+  }
+}

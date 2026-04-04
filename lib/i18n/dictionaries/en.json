@@ -1,0 +1,70 @@
+{
+  "home": {
+    "heroTag": "The Art of Intimacy",
+    "heroTitle1": "Elevate Your",
+    "heroTitle2": "Desires",
+    "heroSubtitle": "Curated luxury wellness products designed for profound connection and aesthetic pleasure.",
+    "curatedTitle": "Curated Selections",
+    "curatedSubtitle": "Our signature pieces blending sophisticated design with unparalleled sensation.",
+    "quote": "Beauty and pleasure are not mutually exclusive. They are the foundation of true intimacy.",
+    "justArrived": "Just Arrived",
+    "newArrivals": "New Arrivals",
+    "seeAll": "See All"
+  },
+  "products": {
+    "theCollection": "The Collection",
+    "allProducts": "All Products",
+    "newArrivals": "New Arrivals",
+    "items": "items",
+    "noProducts": "No products found.",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "vatIncl": "VAT incl."
+  },
+  "product": {
+    "home": "Home",
+    "specifications": "Specifications",
+    "weight": "Weight",
+    "packageSize": "Package size",
+    "addToCart": "Add to Cart",
+    "inStock": "In stock",
+    "outOfStock": "Out of stock"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "continueShopping": "Continue Shopping",
+    "checkout": "Checkout",
+    "total": "Total",
+    "remove": "Remove"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "resetPassword": "Reset Password",
+    "resetSent": "Check your email for a password reset link."
+  },
+  "nav": {
+    "new": "New",
+    "lovetoys": "Lovetoys",
+    "lingerie": "Lingerie",
+    "smBondage": "SM & Bondage",
+    "drugstore": "Drugstore",
+    "condoms": "Condoms",
+    "games": "Games",
+    "assorted": "Assorted",
+    "signIn": "Sign in"
+  },
+  "footer": {
+    "about": "About",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions",
+    "rights": "All rights reserved."
+  }
+}

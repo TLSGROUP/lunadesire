@@ -1,0 +1,70 @@
+{
+  "home": {
+    "heroTag": "L'Art de l'Intimité",
+    "heroTitle1": "Élevez Vos",
+    "heroTitle2": "Désirs",
+    "heroSubtitle": "Des produits de bien-être luxueux conçus pour une connexion profonde et un plaisir esthétique.",
+    "curatedTitle": "Sélections Exclusives",
+    "curatedSubtitle": "Nos pièces signatures alliant design sophistiqué et sensations incomparables.",
+    "quote": "La beauté et le plaisir ne sont pas mutuellement exclusifs. Ils sont le fondement de la véritable intimité.",
+    "justArrived": "Nouveautés",
+    "newArrivals": "Nouveautés",
+    "seeAll": "Voir Tout"
+  },
+  "products": {
+    "theCollection": "La Collection",
+    "allProducts": "Tous les Produits",
+    "newArrivals": "Nouveautés",
+    "items": "articles",
+    "noProducts": "Aucun produit trouvé.",
+    "inStock": "En Stock",
+    "outOfStock": "Rupture de Stock",
+    "vatIncl": "TVA incl."
+  },
+  "product": {
+    "home": "Accueil",
+    "specifications": "Spécifications",
+    "weight": "Poids",
+    "packageSize": "Dimensions du colis",
+    "addToCart": "Ajouter au Panier",
+    "inStock": "En stock",
+    "outOfStock": "Rupture de stock"
+  },
+  "cart": {
+    "title": "Panier",
+    "empty": "Votre panier est vide",
+    "continueShopping": "Continuer les Achats",
+    "checkout": "Commander",
+    "total": "Total",
+    "remove": "Supprimer"
+  },
+  "auth": {
+    "signIn": "Se Connecter",
+    "signUp": "S'inscrire",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "hasAccount": "Déjà un compte ?",
+    "resetPassword": "Réinitialiser le Mot de Passe",
+    "resetSent": "Vérifiez votre e-mail pour le lien de réinitialisation."
+  },
+  "nav": {
+    "new": "Nouveau",
+    "lovetoys": "Sextoys",
+    "lingerie": "Lingerie",
+    "smBondage": "SM & Bondage",
+    "drugstore": "Parapharmacie",
+    "condoms": "Préservatifs",
+    "games": "Jeux",
+    "assorted": "Divers",
+    "signIn": "Connexion"
+  },
+  "footer": {
+    "about": "À Propos",
+    "contact": "Contact",
+    "privacy": "Politique de Confidentialité",
+    "terms": "Conditions Générales",
+    "rights": "Tous droits réservés."
+  }
+}

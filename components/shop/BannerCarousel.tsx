@@ -292,7 +292,7 @@ function SlidePanel({ slide }: { slide: Slide }) {
   )
 }
 
-export function BannerCarousel() {
+export function BannerCarousel({ locale: _locale = 'en' }: { locale?: string }) {
   const trackRef = useRef<HTMLDivElement>(null)
   const isPaused = useRef(false)
   const rafRef = useRef<number>(0)

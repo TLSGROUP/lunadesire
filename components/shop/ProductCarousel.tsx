@@ -18,7 +18,13 @@ interface Product {
 const CARD_WIDTH = 264 // 260px card + 4px gap
 const SPEED = 0.4      // px per frame (~24px/sec at 60fps)
 
-export function ProductCarousel({ products }: { products: Product[] }) {
+interface ProductLabels {
+  inStock: string
+  outOfStock: string
+  vatIncl: string
+}
+
+export function ProductCarousel({ products, locale = 'en', labels }: { products: Product[]; locale?: string; labels?: ProductLabels }) {
   const trackRef = useRef<HTMLDivElement>(null)
   const isPaused = useRef(false)
   const rafRef = useRef<number>(0)
@@ -97,7 +103,7 @@ export function ProductCarousel({ products }: { products: Product[] }) {
       >
         {tripled.map((product, i) => (
           <div key={`${product.id}-${i}`} className="shrink-0 w-[260px] h-[380px]">
-            <ProductCard product={product} compact />
+            <ProductCard product={product} compact locale={locale} labels={labels} />
           </div>
         ))}
       </div>

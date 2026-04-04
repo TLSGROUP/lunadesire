@@ -5,12 +5,14 @@ interface Props {
   currentSlug: string | null
   containerSlug: string | null
   newMode?: boolean
+  locale?: string
 }
 
-export function CategoryFilters({ subcategories, currentSlug, containerSlug, newMode }: Props) {
+export function CategoryFilters({ subcategories, currentSlug, containerSlug, newMode, locale = 'en' }: Props) {
+  const base = `/${locale}`
   const allHref = newMode
-    ? '/products?new=true'
-    : containerSlug ? `/products?category=${encodeURIComponent(containerSlug)}` : '/products'
+    ? `${base}/products?new=true`
+    : containerSlug ? `${base}/products?category=${encodeURIComponent(containerSlug)}` : `${base}/products`
 
   return (
     <div className="border-b border-gray-200">

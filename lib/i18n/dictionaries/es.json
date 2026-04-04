@@ -1,0 +1,70 @@
+{
+  "home": {
+    "heroTag": "El Arte de la Intimidad",
+    "heroTitle1": "Eleva Tus",
+    "heroTitle2": "Deseos",
+    "heroSubtitle": "Productos de bienestar de lujo diseñados para una conexión profunda y placer estético.",
+    "curatedTitle": "Selecciones Exclusivas",
+    "curatedSubtitle": "Nuestras piezas insignia que combinan diseño sofisticado con sensaciones inigualables.",
+    "quote": "La belleza y el placer no son mutuamente excluyentes. Son la base de la verdadera intimidad.",
+    "justArrived": "Recién Llegados",
+    "newArrivals": "Novedades",
+    "seeAll": "Ver Todo"
+  },
+  "products": {
+    "theCollection": "La Colección",
+    "allProducts": "Todos los Productos",
+    "newArrivals": "Novedades",
+    "items": "artículos",
+    "noProducts": "No se encontraron productos.",
+    "inStock": "En Stock",
+    "outOfStock": "Agotado",
+    "vatIncl": "IVA incl."
+  },
+  "product": {
+    "home": "Inicio",
+    "specifications": "Especificaciones",
+    "weight": "Peso",
+    "packageSize": "Tamaño del paquete",
+    "addToCart": "Añadir al Carrito",
+    "inStock": "En stock",
+    "outOfStock": "Agotado"
+  },
+  "cart": {
+    "title": "Carrito de Compras",
+    "empty": "Tu carrito está vacío",
+    "continueShopping": "Seguir Comprando",
+    "checkout": "Finalizar Compra",
+    "total": "Total",
+    "remove": "Eliminar"
+  },
+  "auth": {
+    "signIn": "Iniciar Sesión",
+    "signUp": "Registrarse",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?",
+    "resetPassword": "Restablecer Contraseña",
+    "resetSent": "Revisa tu correo para el enlace de restablecimiento."
+  },
+  "nav": {
+    "new": "Nuevo",
+    "lovetoys": "Juguetes",
+    "lingerie": "Lencería",
+    "smBondage": "SM & Bondage",
+    "drugstore": "Droguería",
+    "condoms": "Condones",
+    "games": "Juegos",
+    "assorted": "Variados",
+    "signIn": "Entrar"
+  },
+  "footer": {
+    "about": "Sobre Nosotros",
+    "contact": "Contacto",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos y Condiciones",
+    "rights": "Todos los derechos reservados."
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "home": {
+    "heroTag": "De Kunst van Intimiteit",
+    "heroTitle1": "Verhef Je",
+    "heroTitle2": "Verlangens",
+    "heroSubtitle": "Luxe wellnessproducten ontworpen voor diepe verbinding en esthetisch genot.",
+    "curatedTitle": "Exclusieve Selecties",
+    "curatedSubtitle": "Onze kenmerkende stukken die verfijnd design combineren met ongeëvenaarde sensatie.",
+    "quote": "Schoonheid en genot sluiten elkaar niet uit. Ze vormen het fundament van echte intimiteit.",
+    "justArrived": "Net Binnen",
+    "newArrivals": "Nieuw Binnen",
+    "seeAll": "Bekijk Alles"
+  },
+  "products": {
+    "theCollection": "De Collectie",
+    "allProducts": "Alle Producten",
+    "newArrivals": "Nieuw Binnen",
+    "items": "artikelen",
+    "noProducts": "Geen producten gevonden.",
+    "inStock": "Op Voorraad",
+    "outOfStock": "Uitverkocht",
+    "vatIncl": "incl. BTW"
+  },
+  "product": {
+    "home": "Home",
+    "specifications": "Specificaties",
+    "weight": "Gewicht",
+    "packageSize": "Pakketgrootte",
+    "addToCart": "In Winkelwagen",
+    "inStock": "Op voorraad",
+    "outOfStock": "Uitverkocht"
+  },
+  "cart": {
+    "title": "Winkelwagen",
+    "empty": "Je winkelwagen is leeg",
+    "continueShopping": "Verder Winkelen",
+    "checkout": "Afrekenen",
+    "total": "Totaal",
+    "remove": "Verwijderen"
+  },
+  "auth": {
+    "signIn": "Inloggen",
+    "signUp": "Registreren",
+    "email": "E-mail",
+    "password": "Wachtwoord",
+    "forgotPassword": "Wachtwoord vergeten?",
+    "noAccount": "Nog geen account?",
+    "hasAccount": "Al een account?",
+    "resetPassword": "Wachtwoord Herstellen",
+    "resetSent": "Controleer je e-mail voor de herstelkoppeling."
+  },
+  "nav": {
+    "new": "Nieuw",
+    "lovetoys": "Lovetoys",
+    "lingerie": "Lingerie",
+    "smBondage": "SM & Bondage",
+    "drugstore": "Drogisterij",
+    "condoms": "Condooms",
+    "games": "Spellen",
+    "assorted": "Diversen",
+    "signIn": "Inloggen"
+  },
+  "footer": {
+    "about": "Over Ons",
+    "contact": "Contact",
+    "privacy": "Privacybeleid",
+    "terms": "Algemene Voorwaarden",
+    "rights": "Alle rechten voorbehouden."
+  }
+}

@@ -303,6 +303,60 @@ export async function getAvailableStocks(params: {
   })
 }
 
+// ---- Product Translations --------------------------------------
+
+export const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'de', 'it', 'pt', 'pl', 'nl'] as const
+export type SupportedLocale = typeof SUPPORTED_LOCALES[number]
+
+// DreamLove language ID → our locale code
+export const DREAMLOVE_LANG_MAP: Record<number, SupportedLocale> = {
+  51: 'en',
+  50: 'es',
+  52: 'fr',
+  53: 'de',
+  54: 'it',
+  55: 'pt',
+  67: 'pl',
+  71: 'nl',
+}
+
+export interface ApiProductTranslation {
+  field: 'name' | 'description' | 'longDescription' | string
+  value: string | null
+  language: string  // IRI e.g. "/languages/51"
+  product: string   // IRI e.g. "/products/9437"
+}
+
+// Fetch one page of translations for a given language
+export async function fetchTranslationPage(langId: string, page: number): Promise<{
+  records: ApiProductTranslation[]
+  hasNext: boolean
+  totalItems?: number
+}> {
+  const q = new URLSearchParams({
+    'language': `/languages/${langId}`,
+    'page': String(page),
+    'itemsPerPage': '1000',
+  })
+  const res = await apiFetch<{
+    'hydra:member': ApiProductTranslation[]
+    'hydra:totalItems'?: number
+    'hydra:view'?: { 'hydra:next'?: string }
+  }>(`/product_translations?${q}`, { headers: { 'Accept': 'application/ld+json' } })
+  return {
+    records: res['hydra:member'],
+    hasNext: !!res['hydra:view']?.['hydra:next'],
+    totalItems: res['hydra:totalItems'],
+  }
+}
+
+// Keep old function for backwards compat — now unused in sync
+export async function getAllProductTranslations(): Promise<
+  Map<string, Map<SupportedLocale, { name: string | null; description: string | null; longDescription: string | null }>>
+> {
+  return new Map()
+}
+
 // ---- Product Options (colors) ----------------------------------
 
 // Returns Map<optionGroupIri, options[]>

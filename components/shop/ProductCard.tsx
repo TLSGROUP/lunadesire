@@ -14,18 +14,29 @@ interface Product {
   brand_logo?: string | null
 }
 
+interface Labels {
+  inStock: string
+  outOfStock: string
+  vatIncl: string
+}
+
 interface Props {
   product: Product
   compact?: boolean
+  locale?: string
+  labels?: Labels
 }
 
-export function ProductCard({ product, compact = false }: Props) {
+const defaultLabels: Labels = { inStock: 'In Stock', outOfStock: 'Out of Stock', vatIncl: '{labels.vatIncl}' }
+
+export function ProductCard({ product, compact = false, locale = 'en', labels = defaultLabels }: Props) {
   const image = product.images?.[0] ?? null
+  const base = `/${locale}`
 
   if (compact) {
     return (
       <div className="group relative h-full flex flex-col">
-        <Link href={`/products/${product.slug}`} className="flex flex-col h-full relative border border-gray-200 group-hover:border-gray-300 group-hover:shadow-xl transition-all duration-300">
+        <Link href={`${base}/products/${product.slug}`} className="flex flex-col h-full relative border border-gray-200 group-hover:border-gray-300 group-hover:shadow-xl transition-all duration-300">
           {/* NEW ribbon */}
           {product.is_new && (
             <div className="absolute top-0 left-0 w-24 h-24 overflow-hidden pointer-events-none z-10">
@@ -39,11 +50,11 @@ export function ProductCard({ product, compact = false }: Props) {
           <div className="flex justify-center">
             {product.stock_quantity > 0 ? (
               <span className="px-2 py-0.5 bg-[#2d6a2d] text-white text-[9px] font-semibold tracking-wider uppercase">
-                In Stock ({product.stock_quantity})
+                {labels.inStock} ({product.stock_quantity})
               </span>
             ) : (
               <span className="px-2 py-0.5 bg-[#555] text-white text-[9px] font-semibold tracking-wider uppercase">
-                Out of Stock
+                {labels.outOfStock}
               </span>
             )}
           </div>
@@ -75,7 +86,7 @@ export function ProductCard({ product, compact = false }: Props) {
             <p className="text-xs text-gray-800 line-clamp-2 leading-snug">{product.name}</p>
             <div className="flex items-baseline justify-between mt-auto">
               <p className="text-base font-semibold text-gray-900">{formatPrice(product.retail_price)}</p>
-              <span className="text-[9px] text-gray-400 tracking-wide uppercase">VAT incl.</span>
+              <span className="text-[9px] text-gray-400 tracking-wide uppercase">{labels.vatIncl}</span>
             </div>
           </div>
         </Link>
@@ -85,7 +96,7 @@ export function ProductCard({ product, compact = false }: Props) {
 
   return (
     <div className="group relative flex flex-col h-full">
-      <Link href={`/products/${product.slug}`} className="flex flex-col flex-1 relative border border-gray-200 group-hover:border-gray-300 group-hover:shadow-xl transition-all duration-300">
+      <Link href={`${base}/products/${product.slug}`} className="flex flex-col flex-1 relative border border-gray-200 group-hover:border-gray-300 group-hover:shadow-xl transition-all duration-300">
         {/* NEW ribbon */}
         {product.is_new && (
           <div className="absolute top-0 left-0 w-24 h-24 overflow-hidden pointer-events-none z-10">
@@ -134,7 +145,7 @@ export function ProductCard({ product, compact = false }: Props) {
           <p className="text-sm text-gray-800 line-clamp-2 leading-snug flex-1">{product.name}</p>
           <div className="flex items-baseline justify-between mt-2">
             <p className="text-lg font-semibold text-gray-900">{formatPrice(product.retail_price)}</p>
-            <span className="text-[10px] text-gray-400 tracking-wide uppercase">VAT incl.</span>
+            <span className="text-[10px] text-gray-400 tracking-wide uppercase">{labels.vatIncl}</span>
           </div>
         </div>
       </Link>

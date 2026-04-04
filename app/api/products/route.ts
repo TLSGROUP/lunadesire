@@ -25,6 +25,7 @@ export async function GET(request: Request) {
   const brand = searchParams.get('brand') ?? undefined
   const q = searchParams.get('q') ?? undefined
   const isNew = searchParams.get('new') ?? undefined
+  const locale = searchParams.get('locale') ?? 'en'
 
   const supabase = await createClient()
 
@@ -52,10 +53,28 @@ export async function GET(request: Request) {
     query = query.in('category_id', categoryIds)
   }
 
-  const { data: products, count } = await query
+  const { data: rawProducts, count } = await query
+
+  // Load translations for current locale
+  const productIds = (rawProducts ?? []).map((p) => p.id)
+  const products = [...(rawProducts ?? [])]
+  if (productIds.length > 0) {
+    const { data: translations } = await supabase
+      .from('product_translations')
+      .select('product_id, name')
+      .eq('locale', locale)
+      .in('product_id', productIds)
+    if (translations) {
+      const trMap = new Map(translations.map((t) => [t.product_id, t.name]))
+      for (const p of products) {
+        const trName = trMap.get(p.id)
+        if (trName) (p as Record<string, unknown>).name = trName
+      }
+    }
+  }
 
   return NextResponse.json({
-    products: products ?? [],
+    products,
     total: count ?? 0,
     page,
     hasMore: (count ?? 0) > page * pageSize,

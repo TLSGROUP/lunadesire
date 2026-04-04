@@ -34,6 +34,7 @@ const STAGE_LABELS: Record<string, string> = {
   categories: 'Categories',
   deactivate: 'Cleanup',
   stock: 'Stock',
+  translations: 'Translations',
   done: 'Done',
   error: 'Error',
 }
@@ -44,6 +45,7 @@ const STAGE_COLORS: Record<string, string> = {
   categories: 'text-purple-400',
   deactivate: 'text-yellow-400',
   stock: 'text-green-400',
+  translations: 'text-indigo-400',
   done: 'text-emerald-400',
   error: 'text-red-400',
 }
@@ -98,7 +100,10 @@ export function SyncPanel({ lastLog, logs, totalProducts }: Props) {
           total: data.total as number | undefined,
         },
       ]
-      setTimeout(() => logEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 30)
+      setTimeout(() => {
+        const box = logEndRef.current?.parentElement
+        if (box) box.scrollTop = box.scrollHeight
+      }, 30)
       return next
     })
   }
@@ -312,7 +317,7 @@ export function SyncPanel({ lastLog, logs, totalProducts }: Props) {
       </div>
 
       {/* RIGHT: terminal — fills all remaining width */}
-      <div className="flex-1 min-w-0 border border-gray-200 rounded-lg overflow-hidden sticky top-6">
+      <div className="flex-1 min-w-0 border border-gray-200 rounded-lg overflow-hidden self-start">
         {/* Terminal header */}
         <div className="flex items-center gap-2 px-4 py-2.5 bg-[#161b22] border-b border-[#30363d]">
           <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
@@ -346,7 +351,7 @@ export function SyncPanel({ lastLog, logs, totalProducts }: Props) {
         )}
 
         {/* Log output */}
-        <div className="bg-[#0d1117] text-[#e6edf3] font-mono text-xs p-4 min-h-[520px] overflow-y-auto">
+        <div className="bg-[#0d1117] text-[#e6edf3] font-mono text-xs p-4 h-[520px] overflow-y-auto">
           {lines.length === 0 && !running && (
             <span className="text-gray-600">Waiting for sync to start…</span>
           )}

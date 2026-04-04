@@ -15,13 +15,21 @@ interface Product {
   brand_logo?: string | null
 }
 
+interface ProductLabels {
+  inStock: string
+  outOfStock: string
+  vatIncl: string
+}
+
 interface Props {
   initialProducts: Product[]
   initialHasMore: boolean
   searchParams: Record<string, string | undefined>
+  locale?: string
+  labels?: ProductLabels
 }
 
-export function InfiniteProductGrid({ initialProducts, initialHasMore, searchParams }: Props) {
+export function InfiniteProductGrid({ initialProducts, initialHasMore, searchParams, locale = 'en', labels }: Props) {
   const [products, setProducts] = useState<Product[]>(initialProducts)
   const [hasMore, setHasMore] = useState(initialHasMore)
   const [loading, setLoading] = useState(false)
@@ -46,6 +54,7 @@ export function InfiniteProductGrid({ initialProducts, initialHasMore, searchPar
     if (searchParams.brand) params.set('brand', searchParams.brand)
     if (searchParams.q) params.set('q', searchParams.q)
     if (searchParams.new) params.set('new', searchParams.new)
+    params.set('locale', locale)
 
     try {
       const res = await fetch(`/api/products?${params}`)
@@ -84,7 +93,7 @@ export function InfiniteProductGrid({ initialProducts, initialHasMore, searchPar
     <>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-6">
         {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
+          <ProductCard key={p.id} product={p} locale={locale} labels={labels} />
         ))}
       </div>
 

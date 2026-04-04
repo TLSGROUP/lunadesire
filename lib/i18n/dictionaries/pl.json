@@ -1,0 +1,70 @@
+{
+  "home": {
+    "heroTag": "Sztuka Intymności",
+    "heroTitle1": "Wznieś Swoje",
+    "heroTitle2": "Pragnienia",
+    "heroSubtitle": "Luksusowe produkty wellness zaprojektowane dla głębokich połączeń i estetycznej przyjemności.",
+    "curatedTitle": "Ekskluzywne Wybory",
+    "curatedSubtitle": "Nasze flagowe produkty łączące wyrafinowany design z niezrównaną sensacją.",
+    "quote": "Piękno i przyjemność nie wykluczają się wzajemnie. Są fundamentem prawdziwej intymności.",
+    "justArrived": "Właśnie Dotarły",
+    "newArrivals": "Nowości",
+    "seeAll": "Zobacz Wszystko"
+  },
+  "products": {
+    "theCollection": "Kolekcja",
+    "allProducts": "Wszystkie Produkty",
+    "newArrivals": "Nowości",
+    "items": "produktów",
+    "noProducts": "Nie znaleziono produktów.",
+    "inStock": "Dostępny",
+    "outOfStock": "Niedostępny",
+    "vatIncl": "z VAT"
+  },
+  "product": {
+    "home": "Strona Główna",
+    "specifications": "Specyfikacja",
+    "weight": "Waga",
+    "packageSize": "Rozmiar opakowania",
+    "addToCart": "Dodaj do Koszyka",
+    "inStock": "Dostępny",
+    "outOfStock": "Niedostępny"
+  },
+  "cart": {
+    "title": "Koszyk",
+    "empty": "Twój koszyk jest pusty",
+    "continueShopping": "Kontynuuj Zakupy",
+    "checkout": "Przejdź do Kasy",
+    "total": "Razem",
+    "remove": "Usuń"
+  },
+  "auth": {
+    "signIn": "Zaloguj się",
+    "signUp": "Zarejestruj się",
+    "email": "E-mail",
+    "password": "Hasło",
+    "forgotPassword": "Nie pamiętasz hasła?",
+    "noAccount": "Nie masz konta?",
+    "hasAccount": "Masz już konto?",
+    "resetPassword": "Zresetuj Hasło",
+    "resetSent": "Sprawdź swój e-mail, aby znaleźć link do resetowania."
+  },
+  "nav": {
+    "new": "Nowości",
+    "lovetoys": "Lovetoys",
+    "lingerie": "Bielizna",
+    "smBondage": "SM & Bondage",
+    "drugstore": "Drogeria",
+    "condoms": "Prezerwatywy",
+    "games": "Gry",
+    "assorted": "Różne",
+    "signIn": "Zaloguj"
+  },
+  "footer": {
+    "about": "O Nas",
+    "contact": "Kontakt",
+    "privacy": "Polityka Prywatności",
+    "terms": "Regulamin",
+    "rights": "Wszelkie prawa zastrzeżone."
+  }
+}

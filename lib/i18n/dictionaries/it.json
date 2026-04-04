@@ -1,0 +1,70 @@
+{
+  "home": {
+    "heroTag": "L'Arte dell'Intimità",
+    "heroTitle1": "Eleva i Tuoi",
+    "heroTitle2": "Desideri",
+    "heroSubtitle": "Prodotti di lusso per il benessere, pensati per una connessione profonda e piacere estetico.",
+    "curatedTitle": "Selezioni Esclusive",
+    "curatedSubtitle": "I nostri pezzi iconici che uniscono design sofisticato e sensazioni impareggiabili.",
+    "quote": "Bellezza e piacere non si escludono a vicenda. Sono le fondamenta della vera intimità.",
+    "justArrived": "Appena Arrivati",
+    "newArrivals": "Novità",
+    "seeAll": "Vedi Tutto"
+  },
+  "products": {
+    "theCollection": "La Collezione",
+    "allProducts": "Tutti i Prodotti",
+    "newArrivals": "Novità",
+    "items": "articoli",
+    "noProducts": "Nessun prodotto trovato.",
+    "inStock": "Disponibile",
+    "outOfStock": "Esaurito",
+    "vatIncl": "IVA incl."
+  },
+  "product": {
+    "home": "Home",
+    "specifications": "Specifiche",
+    "weight": "Peso",
+    "packageSize": "Dimensioni pacco",
+    "addToCart": "Aggiungi al Carrello",
+    "inStock": "Disponibile",
+    "outOfStock": "Esaurito"
+  },
+  "cart": {
+    "title": "Carrello",
+    "empty": "Il tuo carrello è vuoto",
+    "continueShopping": "Continua lo Shopping",
+    "checkout": "Procedi al Pagamento",
+    "total": "Totale",
+    "remove": "Rimuovi"
+  },
+  "auth": {
+    "signIn": "Accedi",
+    "signUp": "Registrati",
+    "email": "E-mail",
+    "password": "Password",
+    "forgotPassword": "Password dimenticata?",
+    "noAccount": "Non hai un account?",
+    "hasAccount": "Hai già un account?",
+    "resetPassword": "Reimposta Password",
+    "resetSent": "Controlla la tua e-mail per il link di reimpostazione."
+  },
+  "nav": {
+    "new": "Novità",
+    "lovetoys": "Lovetoys",
+    "lingerie": "Lingerie",
+    "smBondage": "SM & Bondage",
+    "drugstore": "Drugstore",
+    "condoms": "Preservativi",
+    "games": "Giochi",
+    "assorted": "Vari",
+    "signIn": "Accedi"
+  },
+  "footer": {
+    "about": "Chi Siamo",
+    "contact": "Contatti",
+    "privacy": "Informativa Privacy",
+    "terms": "Termini e Condizioni",
+    "rights": "Tutti i diritti riservati."
+  }
+}
