@@ -110,11 +110,11 @@ export function ProductCard({ product, compact = false, locale = 'en', labels = 
         <div className="flex justify-center mb-1">
           {product.stock_quantity > 0 ? (
             <span className="px-3 py-1 bg-[#2d6a2d] text-white text-[10px] font-semibold tracking-wider uppercase">
-              In Stock ({product.stock_quantity})
+              {labels?.inStock ?? 'In Stock'} ({product.stock_quantity})
             </span>
           ) : (
             <span className="px-3 py-1 bg-[#555] text-white text-[10px] font-semibold tracking-wider uppercase">
-              Out of Stock
+              {labels?.outOfStock ?? 'Out of Stock'}
             </span>
           )}
         </div>

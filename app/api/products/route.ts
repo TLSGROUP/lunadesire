@@ -61,14 +61,23 @@ export async function GET(request: Request) {
   if (productIds.length > 0) {
     const { data: translations } = await supabase
       .from('product_translations')
-      .select('product_id, name')
+      .select('product_id, name, description, long_description')
       .eq('locale', locale)
       .in('product_id', productIds)
     if (translations) {
-      const trMap = new Map(translations.map((t) => [t.product_id, t.name]))
+      const trMap = new Map(
+        translations.map((t) => [
+          t.product_id,
+          { name: t.name, description: t.description, long_description: t.long_description }
+        ])
+      )
       for (const p of products) {
-        const trName = trMap.get(p.id)
-        if (trName) (p as Record<string, unknown>).name = trName
+        const tr = trMap.get(p.id)
+        if (tr) {
+          if (tr.name) (p as Record<string, unknown>).name = tr.name
+          if (tr.description) (p as Record<string, unknown>).description = tr.description
+          if (tr.long_description) (p as Record<string, unknown>).long_description = tr.long_description
+        }
       }
     }
   }
